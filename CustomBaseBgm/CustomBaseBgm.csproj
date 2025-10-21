@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+	<TargetFramework>netstandard2.1</TargetFramework>
+	<Nullable>enable</Nullable>
+		<!-- 下面这行里填写你的鸭科夫安装路径，这样编译器就能找到相关的dll文件 -->
+		<DuckovPath>D:\Games\SteamLibrary\steamapps\common\Escape from Duckov</DuckovPath>
+		<!-- 下面这行里填写MOD加载路径，这里使用BepInEx加载 -->
+		<ModingDir>BepInEx\plugins\moyes-custom-basebgm</ModingDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\TeamSoda.*">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\ItemStatsSystem.dll">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\Unity*">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\FMODUnity.dll">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\Plugins.dll">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\UniTask.dll">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="..\Dependency\*">
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="WorkShop\" />
+	</ItemGroup>
+
+	<Target Name="CopyPublishFiles" AfterTargets="Build">
+		<ItemGroup>
+			<PublishFiles Include="WorkShop\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+	</Target>
+	<Target Name="AfterBuildCopy" AfterTargets="Build">
+		<!-- 复制输出目录 -->
+		<Exec Command='xcopy "$(OutputPath)\*.dll" "$(DuckovPath)\$(ModingDir)\" /Y' />
+
+		<!-- 再复制创意工坊文件 -->
+		<Exec Command='xcopy "WorkShop\*.*" "$(DuckovPath)\$(ModingDir)\" /Y' />
+	</Target>
+</Project>
