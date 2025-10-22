@@ -52,7 +52,7 @@
 		</ItemGroup>
 		<Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
 	</Target>
-	<Target Name="AfterBuildCopy" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+	<Target Name="AfterBuildCopy" AfterTargets="Build" >
 		<!-- 复制输出目录 -->
 		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(BepinexModingDir)\&quot; /Y" />
 		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(OfficalModingDir)\&quot; /Y" />

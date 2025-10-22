@@ -138,6 +138,8 @@ namespace CustomBaseBgm
         public static void StopRuntimeBgm(SceneLoadingContext context)
         {
             Util.LogInformation($"current sceneName is {context.sceneName}");
+            // 切换场景时获取绑定通道的音量
+            BgmVolume = AudioManager.GetBus(BindBus).Volume;
             //不在地堡时停止实时播放
             if (!context.sceneName.Contains(BaseSceneName) && BgmChannel != null)
             {
