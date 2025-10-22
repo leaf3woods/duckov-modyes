@@ -5,6 +5,10 @@ namespace CustomBaseBgm
 {
     public class Util
     {
+
+        public const string BepinExUuid = "yesmod.duckov.bepinex.custombgm";
+        public const string OfficalPluginUuid = "yesmod.duckov.offical+.custombgm";
+
         public static bool LoadByBepinEx { get; set; } = false;
 
         /// <summary>
@@ -17,24 +21,24 @@ namespace CustomBaseBgm
         public static void LogDebug(string msg)
         {
             if (LoadByBepinEx) Logger!.LogDebug(msg);
-            else Debug.Log(msg);
+            else Debug.Log("Mod:[nameof(CustomBaseBgm)] => " + msg);
         }
         public static void LogInformation(string msg)
         {
             if (LoadByBepinEx) Logger!.LogInfo(msg);
-            else Debug.Log(msg);
+            else Debug.Log("Mod:[nameof(CustomBaseBgm)] => " + msg);
         }
 
         public static void LogWarning(string msg)
         {
             if (LoadByBepinEx) Logger!.LogWarning(msg);
-            else Debug.LogWarning(msg);
+            else Debug.LogWarning("Mod:[nameof(CustomBaseBgm)] => " + msg);
         }
 
         public static void LogError(string msg)
         {
             if (LoadByBepinEx) Logger!.LogError(msg);
-            else Debug.LogError(msg);
+            else Debug.LogError("Mod:[nameof(CustomBaseBgm)] => " + msg);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
-using UnityEngine;
 
-namespace CustomBaseBgm.Loader
+namespace CustomBaseBgm
 {
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
@@ -10,24 +9,22 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     对象创建时调用（在 Start 前）
         /// </summary>
-        protected void Awake()
+        public void Awake()
         {
-            Util.LoadByBepinEx = true;
+            Util.LoadByBepinEx = false;
         }
 
         /// <summary>
         ///     脚本启用的第一帧调用
         /// </summary>
-        protected void Start()
+        public void Start()
         {
-            _harmony.PatchAll();
-            Debug.Log("mod is patched by modbehaviour");
         }
 
         /// <summary>
         ///     每帧调用
         /// </summary>
-        protected void Update()
+        public void Update()
         {
 
         }
@@ -35,7 +32,7 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     固定时间步（物理更新）
         /// </summary>
-        protected void FixedUpdate()
+        public void FixedUpdate()
         {
 
         }
@@ -44,7 +41,7 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     所有 Update 之后调用
         /// </summary>
-        protected void LateUpdate()
+        public void LateUpdate()
         {
 
         }
@@ -52,26 +49,31 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
-        protected void OnEnable()
+        public void OnEnable()
         {
-            _harmony = new Harmony("yesmod.duckov.modbehaviour.custombgm");
-            Debug.Log("harmony is created modbehaviour");
+            Util.LogInformation($"plugin enabled, patching harmony({Util.OfficalPluginUuid})...");
+            _harmony = new Harmony(Util.OfficalPluginUuid);
+            Util.LogInformation("harmony is created by offical plugin");
+            _harmony.PatchAll();
+            Util.LogInformation("mod is patched by offical plugin");
         }
 
         /// <summary>
         ///     禁用脚本时调用
         /// </summary>
-        protected void OnDisable()
+        public void OnDisable()
         {
-            _harmony.UnpatchAll();
+            Util.LogInformation("plugin disabled, unpatch harmony...");
+            _harmony.UnpatchAll(Util.OfficalPluginUuid);
         }
 
         /// <summary>
         ///     销毁对象时调用
         /// </summary>
-        protected void OnDestroy()
+        public void OnDestroy()
         {
-            _harmony.UnpatchAll();
+            Util.LogInformation("plugin destroied");
+            //_harmony.UnpatchAll();
         }
     }
 }

@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace CustomBaseBgm.Loader
 {
-    [BepInPlugin("yesmod.duckov.bepinex.custombgm", "Custom Base BGM", "1.0.0")]
+    [BepInPlugin(Util.BepinExUuid, "Custom Base BGM", "1.0.0")]
     //[BepInDependency("com.bepinex.plugin.important")]
     public class BepinExPlugin : BaseUnityPlugin
     {
@@ -12,7 +12,7 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     对象创建时调用（在 Start 前）
         /// </summary>
-        protected void Awake()
+        public void Awake()
         {
             Util.LoadByBepinEx = true;
             Util.Logger =  BepInEx.Logging.Logger.CreateLogSource(nameof(CustomBaseBgm));
@@ -21,14 +21,14 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     脚本启用的第一帧调用
         /// </summary>
-        protected void Start()
+        public void Start()
         {
         }
 
         /// <summary>
         ///     每帧调用
         /// </summary>
-        protected void Update()
+        public void Update()
         {
 
         }
@@ -36,7 +36,7 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     固定时间步（物理更新）
         /// </summary>
-        protected void FixedUpdate()
+        public void FixedUpdate()
         {
 
         }
@@ -45,7 +45,7 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     所有 Update 之后调用
         /// </summary>
-        protected void LateUpdate()
+        public void LateUpdate()
         {
 
         }
@@ -53,9 +53,10 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
-        protected void OnEnable()
+        public void OnEnable()
         {
-            _harmony = new Harmony("yesmod.duckov.bepinex.custombgm");
+            Util.LogInformation($"plugin enabled, patching harmony({Util.BepinExUuid})...");
+            _harmony = new Harmony(Util.BepinExUuid);
             Util.LogInformation("harmony is created by bepinex");
             _harmony.PatchAll();
             Util.LogInformation("mod is patched by bepinex");
@@ -64,15 +65,16 @@ namespace CustomBaseBgm.Loader
         /// <summary>
         ///     禁用脚本时调用
         /// </summary>
-        protected void OnDisable()
+        public void OnDisable()
         {
-            //_harmony.UnpatchAll();
+            Util.LogInformation("plugin disabled, unpatch harmony...");
+            _harmony.UnpatchAll(Util.BepinExUuid);
         }
 
         /// <summary>
         ///     销毁对象时调用
         /// </summary>
-        protected void OnDestroy()
+        public void OnDestroy()
         {
             //_harmony.UnpatchAll();
         }

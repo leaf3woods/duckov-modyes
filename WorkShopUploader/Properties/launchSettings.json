@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WorkShopUploader": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
