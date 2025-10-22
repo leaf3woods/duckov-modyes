@@ -124,22 +124,20 @@ namespace CustomBaseBgm
         [HarmonyPatch(typeof(UI_Bus_Slider), "OnValueChanged")]
         public static void OnValueChangedPostfixPatch(AudioManager.Bus ___busRef)
         {
-
-            Util.LogInformation($"ui bus slider changed, target bus is {___busRef.Name}!");
             //  当用户调整此总线上的音量时，设置运行时音乐
             if(___busRef.Name.Contains(BindBus) && BgmChannel != null)
             {
                 BgmVolume = ___busRef.Volume;
                 BgmChannel.Value.setVolume(___busRef.Volume);
-                Util.LogInformation($"target bus: {___busRef.Name} volume changed to {(___busRef.Volume * 100f):0} succeed!");
             }
         }
 
         public static void StopRuntimeBgm(SceneLoadingContext context)
         {
-            Util.LogInformation($"current sceneName is {context.sceneName}");
             // 切换场景时获取绑定通道的音量
-            BgmVolume = AudioManager.GetBus(BindBus).Volume;
+            var currentBus = AudioManager.GetBus(BindBus);
+            BgmVolume = currentBus.Volume;
+            Util.LogInformation($"current sceneName is {context.sceneName}, current[{currentBus.Name}] volume is {(BgmVolume * 100f):0}");
             //不在地堡时停止实时播放
             if (!context.sceneName.Contains(BaseSceneName) && BgmChannel != null)
             {
@@ -156,7 +154,8 @@ namespace CustomBaseBgm
 
             for (int i = 0; i < steps; i++)
             {
-                volume = 1f - (float)i / steps;
+                volume = BgmVolume - (float)i / steps;
+                if (volume < 0.05f) break;
                 channel.setVolume(volume);
                 await Task.Delay(((int)(stepTime * 1000)));
             }
