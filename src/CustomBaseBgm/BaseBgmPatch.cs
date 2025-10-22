@@ -37,10 +37,9 @@ namespace CustomBaseBgm
             Util.LogInformation($"load method patched! origin entries[{__instance.entries.Length}]:\r\n" +
                 string.Join(',', __instance.entries.Select(e => $"<{e.switchName}>{e.musicName}:{e.author}")));
 
-            //var bgmDir = Path.Combine(Util.LoadByBepinEx ?
-            //    Path.GetDirectoryName(typeof(BaseBgmPatch).Assembly.Location) :
-            //    Environment.CurrentDirectory + "/MyBGM");
-            var bgmDir = Path.Combine(Path.GetDirectoryName(typeof(BaseBgmPatch).Assembly.Location) + "/MyBGM");
+            var bgmDir = Path.Combine(Util.LoadByBepinEx ?
+                Path.GetDirectoryName(typeof(BaseBgmPatch).Assembly.Location) :
+                Environment.CurrentDirectory + "/MyBGM");
             if(!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
             var files = Util.SupportedMusicExtensions.SelectMany(pa => Directory.GetFiles(bgmDir, pa)).ToList();
             files.ForEach(f =>
