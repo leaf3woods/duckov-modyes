@@ -20,6 +20,11 @@ namespace CustomBaseBgm
         public static Dictionary<BaseBGMSelector.Entry, Sound> CustomBgmSounds = new Dictionary<BaseBGMSelector.Entry, Sound>();
         public static ChannelGroup BgmGroup;
         public static FMOD.Channel? BgmChannel;
+        public static float BgmVolume = 0.5f;
+        /// <summary>
+        ///     自定义BGM音量绑定到哪个通道
+        /// </summary>
+        public const string BindBus = "Master/Music";
 
         [HarmonyPrefix]
         [HarmonyPatch("Load")]
@@ -108,6 +113,20 @@ namespace CustomBaseBgm
             }
             
             return false;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UI_Bus_Slider), "OnValueChanged")]
+        public static void OnValueChangedPostfixPatch(AudioManager.Bus ___busRef)
+        {
+
+            Util.LogInformation($"ui bus slider changed, target bus is {___busRef.Name}!");
+            //  当用户调整此总线上的音量时，设置运行时音乐
+            if(___busRef.Name.Contains(BindBus) && BgmChannel != null)
+            {
+                BgmChannel.Value.setVolume(___busRef.Volume);
+                Util.LogInformation($"target bus: {___busRef.Name} volume changed to {(___busRef.Volume * 100f):0} succeed!");
+            }
         }
     }
 }
