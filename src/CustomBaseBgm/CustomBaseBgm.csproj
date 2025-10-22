@@ -6,8 +6,8 @@
 		<!-- 下面这行里填写你的鸭科夫安装路径，这样编译器就能找到相关的dll文件 -->
 		<DuckovPath>D:\Games\SteamLibrary\steamapps\common\Escape from Duckov</DuckovPath>
 		<!-- 下面这行里填写MOD加载路径 -->
-		<!--<ModingDir>BepInEx\plugins\moyes-custom-basebgm</ModingDir>-->
-		<ModingDir>Duckov_Data\Mods\moyes-custom-basebgm</ModingDir>
+		<BepinexModingDir>BepInEx\plugins\moyes-custom-basebgm</BepinexModingDir>
+		<OfficalModingDir>Duckov_Data\Mods\moyes-custom-basebgm</OfficalModingDir>
 		<Platforms>AnyCPU;x64</Platforms>
 		<Configurations>Debug;Release</Configurations>
 	</PropertyGroup>
@@ -54,12 +54,14 @@
 	</Target>
 	<Target Name="AfterBuildCopy" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
 		<!-- 复制输出目录 -->
-		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(ModingDir)\&quot; /Y" />
+		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(BepinexModingDir)\&quot; /Y" />
+		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(OfficalModingDir)\&quot; /Y" />
 		<!--<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(BepinexModingDir)\&quot; /Y /E" />
 		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(OfficalModingDir)\&quot; /Y /E" />-->
 
 		<!-- 再复制创意工坊文件 -->
-		<Exec Command="xcopy &quot;WorkShop\&quot; &quot;$(DuckovPath)\$(ModingDir)\&quot; /Y /E" />
+		<Exec Command="xcopy &quot;WorkShop\&quot; &quot;$(DuckovPath)\$(BepinexModingDir)\&quot; /Y /E" />
+		<Exec Command="xcopy &quot;WorkShop\&quot; &quot;$(DuckovPath)\$(OfficalModingDir)\&quot; /Y /E" />
 
 	</Target>
 </Project>

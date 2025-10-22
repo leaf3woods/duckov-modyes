@@ -60,6 +60,7 @@ namespace CustomBaseBgm.Loader
             Util.LogInformation("harmony is created by bepinex");
             _harmony.PatchAll();
             Util.LogInformation("mod is patched by bepinex");
+            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>
@@ -69,6 +70,7 @@ namespace CustomBaseBgm.Loader
         {
             Util.LogInformation("plugin disabled, unpatch harmony...");
             _harmony.UnpatchAll(Util.BepinExUuid);
+            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>

@@ -5,9 +5,12 @@ using FMOD;
 using HarmonyLib;
 using SodaCraft.StringUtilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace CustomBaseBgm
 {
@@ -21,6 +24,7 @@ namespace CustomBaseBgm
         public static ChannelGroup BgmGroup;
         public static FMOD.Channel? BgmChannel;
         public static float BgmVolume = 0.5f;
+        public static string BaseSceneName = "Base";
         /// <summary>
         ///     自定义BGM音量绑定到哪个通道
         /// </summary>
@@ -92,6 +96,7 @@ namespace CustomBaseBgm
             {
                 FMODUnity.RuntimeManager.CoreSystem.playSound(pair.Value, BgmGroup, false, out var channel);
                 BgmChannel = channel;
+                BgmChannel.Value.setVolume(BgmVolume);
             }
             var prop = AccessTools.Property(typeof(BaseBGMSelector), "BGMInfoFormat");
             var bgmInfoFormat = (string)prop?.GetValue(__instance)!;
@@ -124,9 +129,36 @@ namespace CustomBaseBgm
             //  当用户调整此总线上的音量时，设置运行时音乐
             if(___busRef.Name.Contains(BindBus) && BgmChannel != null)
             {
+                BgmVolume = ___busRef.Volume;
                 BgmChannel.Value.setVolume(___busRef.Volume);
                 Util.LogInformation($"target bus: {___busRef.Name} volume changed to {(___busRef.Volume * 100f):0} succeed!");
             }
+        }
+
+        public static void StopRuntimeBgm(SceneLoadingContext context)
+        {
+            Util.LogInformation($"current sceneName is {context.sceneName}");
+            //不在地堡时停止实时播放
+            if (!context.sceneName.Contains(BaseSceneName) && BgmChannel != null)
+            {
+                Task.Run(() => FadeOutAsync(BgmChannel.Value, 3f));
+                Util.LogInformation("runtime music stoped!");
+            }
+        }
+
+        public static async Task FadeOutAsync(FMOD.Channel channel, float duration)
+        {
+            const int steps = 50;
+            float stepTime = duration / steps;
+            float volume = BgmVolume;
+
+            for (int i = 0; i < steps; i++)
+            {
+                volume = 1f - (float)i / steps;
+                channel.setVolume(volume);
+                await Task.Delay(((int)(stepTime * 1000)));
+            }
+            channel.stop();
         }
     }
 }

@@ -56,6 +56,7 @@ namespace CustomBaseBgm
             Util.LogInformation("harmony is created by offical plugin");
             _harmony.PatchAll();
             Util.LogInformation("mod is patched by offical plugin");
+            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>
@@ -65,6 +66,7 @@ namespace CustomBaseBgm
         {
             Util.LogInformation("plugin disabled, unpatch harmony...");
             _harmony.UnpatchAll(Util.OfficalPluginUuid);
+            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>
