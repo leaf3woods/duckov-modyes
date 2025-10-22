@@ -2,7 +2,7 @@
 
 ### 自定义基地BGM ✅ 已完成
 
-
+#### [本项目已在github开源：leaf3woods/duckov-modyes](https://github.com/leaf3woods/duckov-modyes)
 
 ### 0. 局内效果
 
@@ -54,5 +54,3 @@ D:.[游戏Mods目录]
 [GitHub - pardeike/Harmony: A library for patching, replacing and decorating .NET and Mono methods during runtime](https://github.com/pardeike/Harmony)
 
 https://github.com/BepInEx/BepInEx[GitHub - BepInEx/BepInEx: Unity / XNA game patcher and plugin framework](https://github.com/BepInEx/BepInEx)
-
-
