@@ -15,21 +15,27 @@
 	<ItemGroup>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\TeamSoda.*">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\ItemStatsSystem.dll">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\Unity*">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\FMODUnity.dll">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\Plugins.dll">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\UniTask.dll">
 			<Private>False</Private>
+			<Pack>false</Pack>   
 		</Reference>
 		<Reference Include="..\dependency\Patching\*.dll">
 		</Reference>
@@ -46,7 +52,7 @@
 		</ItemGroup>
 		<Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
 	</Target>
-	<Target Name="AfterBuildCopy" AfterTargets="Build">
+	<Target Name="AfterBuildCopy" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
 		<!-- 复制输出目录 -->
 		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(ModingDir)\&quot; /Y" />
 		<!--<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(DuckovPath)\$(BepinexModingDir)\&quot; /Y /E" />
