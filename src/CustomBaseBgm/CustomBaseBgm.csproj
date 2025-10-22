@@ -9,7 +9,7 @@
 		<!--<ModingDir>BepInEx\plugins\moyes-custom-basebgm</ModingDir>-->
 		<ModingDir>Duckov_Data\Mods\moyes-custom-basebgm</ModingDir>
 		<Platforms>AnyCPU;x64</Platforms>
-		<Configurations>Debug;Release;Offical;Bepinex</Configurations>
+		<Configurations>Debug;Release</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -37,7 +37,7 @@
 			<Private>False</Private>
 			<Pack>false</Pack>   
 		</Reference>
-		<Reference Include="..\dependency\Patching\*.dll">
+		<Reference Include="..\..\dependency\Patching\*.dll">
 		</Reference>
 	</ItemGroup>
 	

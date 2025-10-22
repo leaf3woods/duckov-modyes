@@ -3,51 +3,34 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomBaseBgm", "CustomBaseBgm\CustomBaseBgm.csproj", "{EE32E8A0-F4BB-46E6-9869-3082453E8435}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomBaseBgm", "src\CustomBaseBgm\CustomBaseBgm.csproj", "{EE32E8A0-F4BB-46E6-9869-3082453E8435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkShopUploader", "WorkShopUploader\WorkShopUploader.csproj", "{BCF3AA40-CE25-48FD-865C-3486577BB061}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkShopUploader", "src\WorkShopUploader\WorkShopUploader.csproj", "{BCF3AA40-CE25-48FD-865C-3486577BB061}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Bepinex|Any CPU = Bepinex|Any CPU
-		Bepinex|x64 = Bepinex|x64
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Offical|Any CPU = Offical|Any CPU
-		Offical|x64 = Offical|x64
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Bepinex|Any CPU.ActiveCfg = Bepinex|Any CPU
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Bepinex|Any CPU.Build.0 = Bepinex|Any CPU
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Bepinex|x64.ActiveCfg = Bepinex|x64
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Bepinex|x64.Build.0 = Bepinex|x64
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Debug|x64.ActiveCfg = Debug|x64
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Debug|x64.Build.0 = Debug|x64
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Offical|Any CPU.ActiveCfg = Offical|Any CPU
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Offical|Any CPU.Build.0 = Offical|Any CPU
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Offical|x64.ActiveCfg = Offical|x64
-		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Offical|x64.Build.0 = Offical|x64
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Release|x64.ActiveCfg = Release|x64
 		{EE32E8A0-F4BB-46E6-9869-3082453E8435}.Release|x64.Build.0 = Release|x64
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Bepinex|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Bepinex|Any CPU.Build.0 = Debug|Any CPU
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Bepinex|x64.ActiveCfg = Bepinex|x64
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Bepinex|x64.Build.0 = Bepinex|x64
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Debug|x64.ActiveCfg = Debug|x64
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Debug|x64.Build.0 = Debug|x64
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Offical|Any CPU.ActiveCfg = Offical|Any CPU
-		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Offical|x64.ActiveCfg = Offical|x64
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|x64.ActiveCfg = Debug|x64
+		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
