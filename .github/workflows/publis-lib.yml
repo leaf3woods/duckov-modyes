@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
         dotnet: [ '8.0.x' ]   # 用 .NET 8 SDK 编译 .NET Standard 2.1 库是完全支持的
 
     steps:
