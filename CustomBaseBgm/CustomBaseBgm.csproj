@@ -31,7 +31,7 @@
 		<Reference Include="$(DuckovPath)\Duckov_Data\Managed\UniTask.dll">
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="..\Dependency\Patching\*.dll">
+		<Reference Include="..\dependency\Patching\*.dll">
 		</Reference>
 	</ItemGroup>
 	
