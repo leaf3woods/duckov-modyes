@@ -10,59 +10,65 @@
    <img src="doc\modbgm.png" alt="局内效果预览">
 </center>
 
-### 1. 加载模式
+#### 1. 功能说明
 
-支持官方及bepinex的加载方式
+* 初次加载会在[游戏exe目录]下自动生成一个MyBGM文件夹，把你希望替换的背景音乐放入该文件夹中
 
+* 如果目录下没有能加载的音乐文件，会重新使用系统自带的背景音乐
 
+* 目前支持：.mp3, .flac, .aac, .m4a 类型的音频文件，放入其他类型的文件会被排除
 
-#### 2. 文件夹结构
+* 支持播放模式，随机，洗牌，单曲，列表循环，现在默认使用洗牌
 
-* 创意工坊用户点击订阅即可
+* 声音设置，目前绑定到主音量和音乐音量，加载场景前会获取已配置的音量
+  
+  
 
-* 手动安装的话请放入[游戏Mods目录] 下的Mods文件夹内
+### 2.使用说明
 
-* 使用BepinEX 时 目录如下
+1. 创意工坊用户，点击订阅即可
 
-    D:.[游戏Mods目录]
-    └─moyes-custom-basebgm
-        │  0Harmony.dll
-        │  BepInEx.dll
-        │  CustomBaseBgm.dll
-        │  info.ini
-        │  preview.png
-        │
-        └─MyBGM
-                d1v - kush ballad.flac
+2. 若要手动安装可以把本仓库 release文件下载后解压到：[游戏exe目录]\Duckov_Data\Mods\ 文件夹下：
+   
+   ```
+   [游戏exe目录]\Duckov_Data\Mods\
+   ├─modyes-custom-basebgm
+   │      0Harmony.dll
+   │      BepInEx.dll
+   │      info.ini
+   │      Modding.Core.dll
+   │      Modding.CustomBaseBgm.dll
+   │      preview.png
+   │
+   └─...其他Mod文件夹
+   ```
 
-* 使用官方加载mod时目录如下所示，音乐放在游戏exe所在文件夹的MyBGM里
+3. 若要使用BepInEX安装，将BepInEX release文件下载后解压到：[游戏exe目录]，把本仓库release文件下载后解压到：[游戏exe目录]\BepInEx\plugins\ 的文件夹下：
 
-```shell
-D:.[游戏Mods目录]
-└─moyes-custom-basebgm
-       0Harmony.dll
-       BepInEx.dll
-       CustomBaseBgm.dll
-       info.ini
-       preview.png
+```
+[游戏exe目录]\BepInEx\plugins\
+│  LogOutput.log
+├─...bepinex其他文件
+├─cache
+└─plugins
+    ├─.disabled
+    ├─modyes-custom-basebgm
+    │      0Harmony.dll
+    │      BepInEx.dll
+    │      info.ini
+    │      Modding.Core.dll
+    │      Modding.CustomBaseBgm.dll.d
+    │      preview.png
+    │
+    ├─...其他bepinex加载的mod文件夹
 ```
 
 
 
-### 3. 使用说明
-
-* 初次加载会自动生成一个MyBGM文件夹，把你希望替换的背景音乐放入该文件夹中
-
-* 目前支持：.mp3,  .flac,  .aac,  .m4a 类型的音频文件，放入其他类型的文件会被排除
-
-* 如果目录下没有能加载的音乐文件，会重新使用系统自带的背景音乐
-  
-  
-
-### 4. 其他
+### 4. 开源项目
 
 [GitHub - pardeike/Harmony: A library for patching, replacing and decorating .NET and Mono methods during runtime](https://github.com/pardeike/Harmony)
 
-https://github.com/BepInEx/BepInEx[GitHub - BepInEx/BepInEx: Unity / XNA game patcher and plugin framework](https://github.com/BepInEx/BepInEx)
+[GitHub - BepInEx/BepInEx: Unity / XNA game patcher and plugin framework](https://github.com/BepInEx/BepInEx)
 
 
