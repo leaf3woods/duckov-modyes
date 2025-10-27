@@ -1,11 +1,9 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
+using Modding.Core;
 
-namespace CustomBaseBgm.Loader
+namespace Modding.CustomBaseBgm
 {
-    [BepInPlugin(Util.BepinExUuid, "Custom Base BGM", "1.0.0")]
-    //[BepInDependency("com.bepinex.plugin.important")]
-    public class BepinExPlugin : BaseUnityPlugin
+    public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         private Harmony _harmony = null!;
 
@@ -14,8 +12,7 @@ namespace CustomBaseBgm.Loader
         /// </summary>
         public void Awake()
         {
-            Util.LoadByBepinEx = true;
-            Util.Logger =  BepInEx.Logging.Logger.CreateLogSource(nameof(CustomBaseBgm));
+            ModLogger.Initialize<ModBehaviour>(LoadingMode.None);
         }
 
         /// <summary>
@@ -55,12 +52,12 @@ namespace CustomBaseBgm.Loader
         /// </summary>
         public void OnEnable()
         {
-            Util.LogInformation($"plugin enabled, patching harmony({Util.BepinExUuid})...");
-            _harmony = new Harmony(Util.BepinExUuid);
-            Util.LogInformation("harmony is created by bepinex");
+            ModLogger.LogInformation($"plugin enabled, patching harmony({Util.OfficalPluginUuid})...");
+            _harmony = new Harmony(Util.OfficalPluginUuid);
+            ModLogger.LogInformation("harmony is created by offical plugin");
             _harmony.PatchAll();
-            Util.LogInformation("mod is patched by bepinex");
-            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.StopRuntimeBgm;
+            ModLogger.LogInformation("mod is patched by offical plugin");
+            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.HandleSceneChanged;
         }
 
         /// <summary>
@@ -68,9 +65,9 @@ namespace CustomBaseBgm.Loader
         /// </summary>
         public void OnDisable()
         {
-            Util.LogInformation("plugin disabled, unpatch harmony...");
-            _harmony.UnpatchAll(Util.BepinExUuid);
-            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.StopRuntimeBgm;
+            ModLogger.LogInformation("plugin disabled, unpatch harmony...");
+            _harmony.UnpatchAll(Util.OfficalPluginUuid);
+            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.HandleSceneChanged;
         }
 
         /// <summary>
@@ -78,6 +75,7 @@ namespace CustomBaseBgm.Loader
         /// </summary>
         public void OnDestroy()
         {
+            ModLogger.LogInformation("plugin destroied");
             //_harmony.UnpatchAll();
         }
     }

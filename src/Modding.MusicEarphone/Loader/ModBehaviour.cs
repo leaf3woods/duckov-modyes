@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
+using Modding.Core;
 
-namespace CustomBaseBgm
+namespace Modding.MusicEarphone.Loader
 {
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
@@ -11,7 +12,7 @@ namespace CustomBaseBgm
         /// </summary>
         public void Awake()
         {
-            Util.LoadByBepinEx = false;
+            ModLogger.Initialize<ModBehaviour>(LoadingMode.None);
         }
 
         /// <summary>
@@ -51,12 +52,12 @@ namespace CustomBaseBgm
         /// </summary>
         public void OnEnable()
         {
-            Util.LogInformation($"plugin enabled, patching harmony({Util.OfficalPluginUuid})...");
+            ModLogger.LogInformation($"plugin enabled, patching harmony({Util.OfficalPluginUuid})...");
             _harmony = new Harmony(Util.OfficalPluginUuid);
-            Util.LogInformation("harmony is created by offical plugin");
+            ModLogger.LogInformation("harmony is created by offical plugin");
             _harmony.PatchAll();
-            Util.LogInformation("mod is patched by offical plugin");
-            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.StopRuntimeBgm;
+            ModLogger.LogInformation("mod is patched by offical plugin");
+            //SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>
@@ -64,9 +65,9 @@ namespace CustomBaseBgm
         /// </summary>
         public void OnDisable()
         {
-            Util.LogInformation("plugin disabled, unpatch harmony...");
+            ModLogger.LogInformation("plugin disabled, unpatch harmony...");
             _harmony.UnpatchAll(Util.OfficalPluginUuid);
-            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.StopRuntimeBgm;
+            //SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.StopRuntimeBgm;
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace CustomBaseBgm
         /// </summary>
         public void OnDestroy()
         {
-            Util.LogInformation("plugin destroied");
+            ModLogger.LogInformation("plugin destroied");
             //_harmony.UnpatchAll();
         }
     }

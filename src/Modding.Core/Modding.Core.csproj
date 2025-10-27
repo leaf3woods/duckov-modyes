@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<!-- 下面这行里填写你的Unity游戏脚本路径，这样编译器就能找到相关的dll文件 -->
+		<GamePath>D:\Games\SteamLibrary\steamapps\common\Escape from Duckov\</GamePath>
+		<GameScriptsPath>$(GamePath)\Duckov_Data\Managed\</GameScriptsPath>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="$(GameScriptsPath)\FMODUnity.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="..\..\dependency\Patching\*.dll">
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\UnityEngine.Core*.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\UnityEngine.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+	</ItemGroup>
+</Project>

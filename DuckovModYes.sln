@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomBaseBgm", "src\CustomBaseBgm\CustomBaseBgm.csproj", "{EE32E8A0-F4BB-46E6-9869-3082453E8435}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modding.CustomBaseBgm", "src\Modding.CustomBaseBgm\Modding.CustomBaseBgm.csproj", "{EE32E8A0-F4BB-46E6-9869-3082453E8435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkShopUploader", "src\WorkShopUploader\WorkShopUploader.csproj", "{BCF3AA40-CE25-48FD-865C-3486577BB061}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modding.WorkShopUploader", "src\Modding.WorkShopUploader\Modding.WorkShopUploader.csproj", "{BCF3AA40-CE25-48FD-865C-3486577BB061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modding.Core", "src\Modding.Core\Modding.Core.csproj", "{1816A947-6143-474A-9246-4BA52571B06B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modding.MusicEarphone", "src\Modding.MusicEarphone\Modding.MusicEarphone.csproj", "{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modding.Test", "src\Modding.Test\Modding.Test.csproj", "{04EF7343-6066-4578-94EE-179FE8ABB75F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +37,30 @@ Global
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|x64.ActiveCfg = Debug|x64
 		{BCF3AA40-CE25-48FD-865C-3486577BB061}.Release|x64.Build.0 = Debug|x64
+		{1816A947-6143-474A-9246-4BA52571B06B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1816A947-6143-474A-9246-4BA52571B06B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1816A947-6143-474A-9246-4BA52571B06B}.Debug|x64.ActiveCfg = Debug|x64
+		{1816A947-6143-474A-9246-4BA52571B06B}.Debug|x64.Build.0 = Debug|x64
+		{1816A947-6143-474A-9246-4BA52571B06B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1816A947-6143-474A-9246-4BA52571B06B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1816A947-6143-474A-9246-4BA52571B06B}.Release|x64.ActiveCfg = Release|Any CPU
+		{1816A947-6143-474A-9246-4BA52571B06B}.Release|x64.Build.0 = Release|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Debug|x64.ActiveCfg = Debug|x64
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Debug|x64.Build.0 = Debug|x64
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Release|x64.ActiveCfg = Release|Any CPU
+		{2FC6A4E1-C4AE-469B-AA4E-30F83A908B7A}.Release|x64.Build.0 = Release|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Debug|x64.ActiveCfg = Debug|x64
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Debug|x64.Build.0 = Debug|x64
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Release|x64.ActiveCfg = Release|Any CPU
+		{04EF7343-6066-4578-94EE-179FE8ABB75F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

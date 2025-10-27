@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<!-- 下面这行里填写你的Unity游戏脚本路径，这样编译器就能找到相关的dll文件 -->
+		<GamePath>D:\Games\SteamLibrary\steamapps\common\Escape from Duckov\</GamePath>
+		<GameScriptsPath>$(GamePath)\Duckov_Data\Managed\</GameScriptsPath>
+		<!-- 下面这行里填写MOD加载路径 -->
+		<BepinexModingDir>BepInEx\plugins\modyes-custom-musicearphone</BepinexModingDir>
+		<OfficalModingDir>Duckov_Data\Mods\modyes-custom-musicearphone</OfficalModingDir>
+		<Platforms>AnyCPU;x64</Platforms>
+		<Configurations>Debug;Release</Configurations>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="$(GameScriptsPath)\TeamSoda.*">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\ItemStatsSystem.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\Unity*">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\FMODUnity.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\Plugins.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="$(GameScriptsPath)\UniTask.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+		<Reference Include="..\..\dependency\Patching\*.dll">
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Modding.Core\Modding.Core.csproj" />
+	</ItemGroup>
+
+	<Target Name="CopyPublishFiles" AfterTargets="Build">
+		<ItemGroup>
+			<!-- 递归包含 WorkShop 下的所有文件 -->
+			<PublishFiles Include="WorkShop\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+	</Target>
+	<Target Name="AfterBuildCopy" AfterTargets="Build">
+		<!-- 复制输出目录 -->
+		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(GamePath)\$(BepinexModingDir)\&quot; /Y" />
+		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(GamePath)\$(OfficalModingDir)\&quot; /Y" />
+		<!--<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(GamePath)\$(BepinexModingDir)\&quot; /Y /E" />
+		<Exec Command="xcopy &quot;$(OutputPath)\*.dll&quot; &quot;$(GamePath)\$(OfficalModingDir)\&quot; /Y /E" />-->
+
+		<!-- 再复制创意工坊文件 -->
+		<Exec Command="xcopy &quot;WorkShop\&quot; &quot;$(GamePath)\$(BepinexModingDir)\&quot; /Y /E" />
+		<Exec Command="xcopy &quot;WorkShop\&quot; &quot;$(GamePath)\$(OfficalModingDir)\&quot; /Y /E" />
+
+	</Target>
+</Project>
