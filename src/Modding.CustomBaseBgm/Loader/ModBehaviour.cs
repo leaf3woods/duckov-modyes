@@ -15,7 +15,7 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnEnable()
         {
-            Util.LoadingMode = LoadingMode.None;
+            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.None, Util.PluginName);
             Harmony.PatchAll();
             ModLogger!.LogInformation("mod is patched by offical plugin");
             SceneLoader.onStartedLoadingScene += BaseBgmPatch.HandleSceneChanged;

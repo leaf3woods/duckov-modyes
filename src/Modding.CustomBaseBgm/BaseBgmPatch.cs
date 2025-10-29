@@ -24,7 +24,7 @@ namespace Modding.CustomBaseBgm
     [HarmonyPatch(typeof(BaseBGMSelector))]
     public class BaseBgmPatch : PatchBase
     {
-        private static ModLogger ModLogger { get; set; } = null!;
+        public static ModLogger ModLogger { get; set; } = null!;
 
         public static float BgmVolume => BgmMasterVolume * BgmMusicVolume;
         public static string BaseSceneName = "Base";
@@ -37,11 +37,6 @@ namespace Modding.CustomBaseBgm
         public static float BgmMusicVolume = 0.5f;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
-
-        protected override void InitializeLogger()
-        {
-            ModLogger = ModLogger.Initialize<BaseBgmPatch>(Util.LoadingMode, Util.PluginName);
-        }
 
         [HarmonyPrefix]
         [HarmonyPatch("Load")]

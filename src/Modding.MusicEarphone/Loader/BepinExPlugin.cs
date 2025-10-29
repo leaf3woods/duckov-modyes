@@ -17,11 +17,11 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnEnable()
         {
-            Util.LoadingMode = LoadingMode.BepInEx;
+            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.BepInEx, Util.PluginName);
             Harmony.PatchAll();
             ModLogger!.LogInformation("mod is enabled by bepinex");
-            ModLogger!.LogInformation("scene loader handler enabled!");
             MusicEarphonePatch.LoadEarphoneMusics();
+            ModLogger!.LogInformation("scene loader handler enabled!");
             SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;
             CharacterMainControl.OnMainCharacterSlotContentChangedEvent += MusicEarphonePatch.HandleSlotContentChanged;
             AIMainBrain.OnSoundSpawned += MusicEarphonePatch.HandleSoundSpawned;

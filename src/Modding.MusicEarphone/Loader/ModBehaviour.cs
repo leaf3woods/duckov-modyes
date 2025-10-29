@@ -14,7 +14,7 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnEnable()
         {
-            Util.LoadingMode = LoadingMode.None;
+            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.None, Util.PluginName);
             Harmony.PatchAll();
             MusicEarphonePatch.LoadEarphoneMusics();
             SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;

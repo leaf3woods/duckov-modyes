@@ -16,7 +16,7 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnEnable()
         {
-            Util.LoadingMode = LoadingMode.BepInEx;
+            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.BepInEx, Util.PluginName);
             Harmony.PatchAll();
             ModLogger!.LogInformation("mod is enabled by bepinex");
             SceneLoader.onStartedLoadingScene += BaseBgmPatch.HandleSceneChanged;

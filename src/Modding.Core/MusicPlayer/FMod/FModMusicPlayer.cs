@@ -26,7 +26,7 @@ namespace Modding.Core.MusicPlayer.FMod
 
         private Sound _currentSound;
         private Channel _currentChannel;
-        private ChannelGroup _currentChannelGroup;
+        private ChannelGroup _currentChannelGroup = new ChannelGroup();
 
         // 播放随机下一首
         public override void Next()

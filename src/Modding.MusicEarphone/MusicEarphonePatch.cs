@@ -23,7 +23,7 @@ namespace Modding.MusicEarphone
     [HarmonyPatch]
     public class MusicEarphonePatch : PatchBase
     {
-        private static ModLogger ModLogger { get; set; } = null!;
+        public static ModLogger ModLogger { get; set; } = null!;
 
         public const string LevelSceneName = "Level";
         public const string BaseSceneName = "Base";
@@ -46,11 +46,6 @@ namespace Modding.MusicEarphone
         private static Timer _timer = new Timer();
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
-
-        protected override void InitializeLogger()
-        {
-            ModLogger = ModLogger.Initialize<MusicEarphonePatch>(Util.LoadingMode, Util.PluginName);
-        }
 
         public async static UniTaskVoid InitializeEarphoneItemAsync()
         {
