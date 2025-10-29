@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Modding.Core.MusicPlayer.Base
 {
@@ -13,6 +14,7 @@ namespace Modding.Core.MusicPlayer.Base
         public float Volume { get; set; }
 
         public bool IsPlaying { get; protected set; } = false;
+        public bool IsPasued { get; protected set; } = false;
 
         public bool EnableFadeOut { get; set; } = false;
 
@@ -50,7 +52,7 @@ namespace Modding.Core.MusicPlayer.Base
 
         public abstract void ToggleMute(bool mute);
 
-        public abstract void TogglePause();
+        public abstract void TogglePause(bool? paused = null);
 
         public abstract void ApplyVolume(float? volume = null);
 
@@ -76,6 +78,44 @@ namespace Modding.Core.MusicPlayer.Base
                 (array[k], array[n]) = (array[n], array[k]); // 交换
             }
             return array;
+        }
+
+        public async Task FadeToAsync(float duration, float target = 0)
+        {
+            const int steps = 50;
+            const float ignore = 0.05f;
+            var stepTime = duration / steps;
+            var volume = Volume;
+            if (Math.Abs(volume - target) <= ignore || !IsPlaying)
+            {
+                ApplyVolume(volume);
+                return;
+            }
+
+            if (Volume < target)
+            {
+                for (int i = 0; i < steps; i++)
+                {
+                    volume = Volume + (float)i / steps;
+                    ApplyVolume(volume);
+                    await Task.Delay((int)(stepTime * 1000));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < steps; i++)
+                {
+                    volume = Volume - (float)i / steps;
+                    if (target == 0 && volume < ignore)
+                    {
+                        ApplyVolume(0);
+                        Stop();
+                        break;
+                    }
+                    ApplyVolume(volume);
+                    await Task.Delay((int)(stepTime * 1000));
+                }
+            }
         }
     }
 }

@@ -6,19 +6,23 @@ namespace Modding.Core
 {
     public class ModLogger
     {
-        public static ManualLogSource? Logger { get; set; }
-        public static LoadingMode Mode { get; set; }
-        public static string SourceName { get; set; } = null!;
+        public ManualLogSource? Logger { get; set; }
+        public LoadingMode Mode { get; set; }
+        public string SourceName { get; set; } = null!;
 
-        public static void Initialize<T>(LoadingMode mode)
+        public static ModLogger Initialize<T>(LoadingMode mode, string? sourceName = null)
         {
-            Mode = mode;
-            SourceName = typeof(T).Name;
-            if(mode == LoadingMode.BepInEx)
-            Logger = BepInEx.Logging.Logger.CreateLogSource(SourceName);
+            var logger = new ModLogger
+            {
+                Mode = mode,
+                SourceName = sourceName ?? typeof(T).Name,
+            };
+            if (mode == LoadingMode.BepInEx)
+                logger.Logger = BepInEx.Logging.Logger.CreateLogSource(sourceName);
+            return logger;
         }
 
-        public static void LogDebug(string msg)
+        public void LogDebug(string msg)
         {
             switch (Mode)
             {
@@ -34,7 +38,7 @@ namespace Modding.Core
             }  
         }
 
-        public static void LogInformation(string msg)
+        public void LogInformation(string msg)
         {
             switch (Mode)
             {
@@ -50,7 +54,7 @@ namespace Modding.Core
             }
         }
 
-        public static void LogWarning(string msg)
+        public void LogWarning(string msg)
         {
             switch (Mode)
             {
@@ -66,7 +70,7 @@ namespace Modding.Core
             }
         }
 
-        public static void LogError(string msg)
+        public void LogError(string msg)
         {
             switch (Mode)
             {

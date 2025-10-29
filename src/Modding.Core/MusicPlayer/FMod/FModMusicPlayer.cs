@@ -89,17 +89,16 @@ namespace Modding.Core.MusicPlayer.FMod
             {
                 p2 = index;
                 var path = Musics[index].Sound;
-                var result = RuntimeManager.CoreSystem.createSound(path, MODE.DEFAULT | MODE.LOOP_OFF, out _currentSound);
-                if (result == RESULT.OK)
-                {
-                    ModLogger.LogInformation($"music load succeed!");
-                }
-                RuntimeManager.CoreSystem.playSound(_currentSound, _currentChannelGroup, false, out _currentChannel);
-                _currentChannel.setVolume(Volume);
-                _currentChannel.setCallback(ChannelCallback);
+                Task.Run(() => {
+                    var result = RuntimeManager.CoreSystem.createSound(path, MODE.DEFAULT | MODE.LOOP_OFF, out _currentSound);
+                    if (result != RESULT.OK) throw new InvalidOperationException($"create sound failure, path: {path}");
+                    RuntimeManager.CoreSystem.playSound(_currentSound, _currentChannelGroup, false, out _currentChannel);
+                    _currentChannel.setVolume(Volume);
+                    _currentChannel.setCallback(ChannelCallback);
 
-                var key = _currentChannel.handle;
-                _players[key] = new WeakReference<FModMusicPlayer<TInfo>>(this);
+                    var key = _currentChannel.handle;
+                    _players[key] = new WeakReference<FModMusicPlayer<TInfo>>(this);
+                });
             }
             IsPlaying = true;
         }
@@ -132,10 +131,13 @@ namespace Modding.Core.MusicPlayer.FMod
             _currentChannel.setVolume(Volume);
         }
 
-        public override void TogglePause()
+        public override void TogglePause(bool? paused = null)
         {
-            _currentChannel.setPaused(IsPlaying);
-            IsPlaying = !IsPlaying;
+            if (IsPlaying)
+            {
+                IsPasued = paused is null ? IsPasued : paused.Value;
+                _currentChannel.setPaused(IsPasued);
+            }
         }
 
         public override void Previous()
@@ -169,21 +171,5 @@ namespace Modding.Core.MusicPlayer.FMod
         /// </summary>
 
         public static string[] SupportedMusicExtensions = { "*.mp3", "*.flac", "*.aac", "*.m4a" };
-
-        public async Task FadeOutAsync(float duration)
-        {
-            const int steps = 50;
-            var stepTime = duration / steps;
-            var volume = Volume;
-
-            for (int i = 0; i < steps; i++)
-            {
-                volume = Volume - (float)i / steps;
-                if (volume < 0.05f) break;
-                _currentChannel.setVolume(volume);
-                await Task.Delay((int)(stepTime * 1000));
-            }
-            Stop();
-        }
     }
 }

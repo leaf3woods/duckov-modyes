@@ -9,6 +9,8 @@ namespace Modding.CustomBaseBgm
     public class BepinExPlugin : BepInExBase
     {
         protected override string PluginId => Util.BepinExUuid;
+        protected override string PluginName => Util.PluginName;
+
 
         /// <summary>
         ///     启用脚本时调用
@@ -16,7 +18,7 @@ namespace Modding.CustomBaseBgm
         public override void OnEnable()
         {
             Harmony.PatchAll();
-            ModLogger.LogInformation("mod is enabled by bepinex");
+            ModLogger!.LogInformation("mod is enabled by bepinex");
             SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.HandleSceneChanged;
             ModLogger.LogInformation("scene loader handler enabled!");
         }
@@ -28,7 +30,7 @@ namespace Modding.CustomBaseBgm
         {
             //base.OnDisable();
             //SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.HandleSceneChanged;
-            ModLogger.LogInformation("scene loader handler disabled!");
+            ModLogger!.LogInformation("scene loader handler disabled!");
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Modding.Core.MusicPlayer.Base
 {
@@ -10,6 +11,7 @@ namespace Modding.Core.MusicPlayer.Base
         public string? User { get; set; }
 
         public bool IsPlaying { get; }
+        public bool IsPasued { get; }
         public bool IsMute { get; }
 
 
@@ -28,7 +30,7 @@ namespace Modding.Core.MusicPlayer.Base
         public void Next();
 
         public void Previous();
-        public void TogglePause();
+        public void TogglePause(bool? paused = null);
         public void Stop();
 
         public void ToggleMute(bool mute);

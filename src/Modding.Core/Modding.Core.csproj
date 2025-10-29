@@ -23,5 +23,9 @@
 			<Private>False</Private>
 			<Pack>false</Pack>
 		</Reference>
+		<Reference Include="$(GameScriptsPath)\TeamSoda.Duckov.Core.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
 	</ItemGroup>
 </Project>

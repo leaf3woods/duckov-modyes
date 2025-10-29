@@ -1,9 +1,8 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 
 namespace Modding.Core.PluginLoader
 {
-    public abstract class BepInExBase : BaseUnityPlugin, IPlugin
+    public abstract class ModBehaviourBase : Duckov.Modding.ModBehaviour, IPlugin
     {
         protected Harmony Harmony { get; set; } = null!;
 
@@ -31,27 +30,29 @@ namespace Modding.Core.PluginLoader
         /// </summary>
         public virtual void OnDestroy()
         {
-            //Harmony.UnpatchAll(PluginId);
             ModLogger!.LogInformation("plugin object destroied");
         }
 
         public virtual void OnDisable()
         {
-            //Harmony.UnpatchAll(PluginId);
+            BeforeUnpatching();
+            Harmony.UnpatchAll(PluginId);
             ModLogger!.LogInformation("plugin object disabled");
         }
+
+        protected abstract void BeforeUnpatching();
 
         public abstract void OnEnable();
 
         /// <summary>
         ///     对象创建时调用（在 Start 前）
         /// </summary>
-        public virtual void Awake()
+        public void Awake()
         {
-            ModLogger = ModLogger.Initialize<BepInExBase>(LoadingMode.BepInEx, PluginName);
+            ModLogger = ModLogger.Initialize<ModBehaviourBase>(LoadingMode.None, PluginName);
             ModLogger.LogInformation($"plugin enabled, patching harmony({PluginId})...");
             Harmony = new Harmony(PluginId);
-            ModLogger.LogInformation("harmony is created by bepinex");        
+            ModLogger.LogInformation("harmony is created by bepinex");
         }
 
         /// <summary>

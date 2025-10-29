@@ -5,6 +5,8 @@ using HarmonyLib;
 using Modding.Core;
 using Modding.Core.MusicPlayer.Base;
 using Modding.Core.MusicPlayer.FMod;
+using Modding.Core.PluginLoader;
+using Saves;
 using SodaCraft.StringUtilities;
 using System;
 using System.IO;
@@ -19,6 +21,8 @@ namespace Modding.CustomBaseBgm
     [HarmonyPatch(typeof(BaseBGMSelector))]
     public class BaseBgmPatch
     {
+        public static ModLogger ModLogger = (BepInExBase.ModLogger ?? ModBehaviourBase.ModLogger)!;
+
         public static float BgmVolume => BgmMasterVolume * BgmMusicVolume;
         public static string BaseSceneName = "Base";
         /// <summary>
@@ -72,15 +76,15 @@ namespace Modding.CustomBaseBgm
 
         [HarmonyPrefix]
         [HarmonyPatch("Set", new Type[] { typeof(int), typeof(bool), typeof(bool) })]
-        public static bool SetPrefixPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy, ref int index, bool showInfo, bool play)
+        public static bool SetPrefixPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy, bool showInfo, bool play)
         {
-            ModLogger.LogInformation($"set method patched! play index is {index}");
             if(MusicPlayer.Count == 0) return true; // continue original method
-            index = index > MusicPlayer.Count ? -1 : index;
             AudioManager.StopBGM();
             
             if (play)
             {
+                var index = SavesSystem.Load<int>(Util.PluginName);
+                index = index > MusicPlayer.Count ? -1 : index;
                 MusicPlayer.Play(index);
             }
             var prop = AccessTools.Property(typeof(BaseBGMSelector), "BGMInfoFormat");
@@ -88,7 +92,7 @@ namespace Modding.CustomBaseBgm
             var msg = bgmInfoFormat.Format(new
             {
                 name = MusicPlayer.Current.music.Info.musicName,
-                MusicPlayer.Current.music.Info.author,
+                author = MusicPlayer.Current.music.Info.author,
                 index = MusicPlayer.Current.index
             });
             if (showInfo)
@@ -106,20 +110,18 @@ namespace Modding.CustomBaseBgm
 
         [HarmonyPrefix]
         [HarmonyPatch("SetNext")]
-        public static bool SetNextPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy, ref int ___index)
+        public static bool SetNextPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy)
         {
-            ModLogger.LogInformation($"set next method patched! play index is {___index}");
             if(MusicPlayer.Count == 0) return true; // continue original method
             AudioManager.StopBGM();
             
             MusicPlayer.Next();
             var prop = AccessTools.Property(typeof(BaseBGMSelector), "BGMInfoFormat");
             var bgmInfoFormat = (string)prop?.GetValue(__instance)!;
-            ___index = MusicPlayer.Current.index;
             var msg = bgmInfoFormat.Format(new
             {
                 name = MusicPlayer.Current.music.Info.musicName,
-                MusicPlayer.Current.music.Info.author,
+                author = MusicPlayer.Current.music.Info.author,
                 index = MusicPlayer.Current.index
             });
             DialogueBubblesManager.Show(msg, ___proxy.transform, ___proxy.yOffset, false, false, 200f, 2f).Forget();
@@ -128,16 +130,14 @@ namespace Modding.CustomBaseBgm
 
         [HarmonyPrefix]
         [HarmonyPatch("SetPrevious")]
-        public static bool SetPreviousPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy, ref int ___index)
+        public static bool SetPreviousPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy)
         {
-            ModLogger.LogInformation($"set previous method patched! play index is {___index}");
             if (MusicPlayer.Count == 0) return true; // continue original method
             AudioManager.StopBGM();
 
             MusicPlayer.Previous();
             var prop = AccessTools.Property(typeof(BaseBGMSelector), "BGMInfoFormat");
             var bgmInfoFormat = (string)prop?.GetValue(__instance)!;
-            ___index = MusicPlayer.Current.index;
             var msg = bgmInfoFormat.Format(new
             {
                 name = MusicPlayer.Current.music.Info.musicName,
@@ -173,8 +173,9 @@ namespace Modding.CustomBaseBgm
             //不在地堡时停止实时播放
             if (!context.sceneName.Contains(BaseSceneName))
             {
-                Task.Run(() => MusicPlayer.FadeOutAsync(3f));
+                Task.Run(() => MusicPlayer.FadeToAsync(3f));
                 ModLogger.LogInformation("runtime music stoped!");
+                SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
             }
         }
     }
