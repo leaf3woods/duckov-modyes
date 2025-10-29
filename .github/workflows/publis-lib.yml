@@ -2,7 +2,7 @@ name: Build and Package .NET Standard Library
 
 on:
   push:
-    branches: [ "main" ]     # 推送到 main 分支时自动构建
+#    branches: [ "main" ]     # 推送到 main 分支时自动构建
     tags:
       - 'v*'                 # 打 tag（v1.0.0）时发布 Release
 
