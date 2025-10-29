@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Duckov;
+using Duckov.UI;
 using Duckov.UI.DialogueBubbles;
 using HarmonyLib;
 using Modding.Core;
@@ -9,9 +10,11 @@ using Modding.Core.PluginLoader;
 using Saves;
 using SodaCraft.StringUtilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Modding.CustomBaseBgm
 {
@@ -19,9 +22,9 @@ namespace Modding.CustomBaseBgm
     ///     the patch for custom base BGM
     /// </summary>
     [HarmonyPatch(typeof(BaseBGMSelector))]
-    public class BaseBgmPatch
+    public class BaseBgmPatch : PatchBase
     {
-        public static ModLogger ModLogger = (BepInExBase.ModLogger ?? ModBehaviourBase.ModLogger)!;
+        private static ModLogger ModLogger { get; set; } = null!;
 
         public static float BgmVolume => BgmMasterVolume * BgmMusicVolume;
         public static string BaseSceneName = "Base";
@@ -34,6 +37,11 @@ namespace Modding.CustomBaseBgm
         public static float BgmMusicVolume = 0.5f;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
+
+        protected override void InitializeLogger()
+        {
+            ModLogger = ModLogger.Initialize<BaseBgmPatch>(Util.LoadingMode, Util.PluginName);
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch("Load")]
@@ -164,6 +172,72 @@ namespace Modding.CustomBaseBgm
             MusicPlayer?.ApplyVolume(BgmVolume);
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(KontextMenu), "Show", new Type[] { typeof(object), typeof(RectTransform), typeof(KontextMenuDataEntry[]) })]
+        public static bool ShowRectPrefixPatch(KontextMenu __instance, object target, RectTransform watchRectTransform, ref KontextMenuDataEntry[] entries)
+        {
+            var toshows = entries.Select(e => e.text);
+            ModLogger.LogInformation($"rect: {watchRectTransform.name} show up, text is: " + string.Join(',', toshows));
+            //var msg = $"当前播放模式：[{NextMode()}]";
+            //DialogueBubblesManager.Show(msg, watchRectTransform.transform, 1, false, false, 200f, 2f).Forget();
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(InteractableBase), "Start")]
+        public static void InteractableBaseStartPostfix(InteractableBase __instance, ref List<InteractableBase> ___otherInterablesInGroup)
+        {
+            if (___otherInterablesInGroup.Count == 1 && ___otherInterablesInGroup[0] && ___otherInterablesInGroup[0].name == "Last")
+            {
+                ModLogger.LogInformation("add player mode interact...");
+                var original = ___otherInterablesInGroup[0];
+                var selectMode = UnityEngine.Object.Instantiate(original, original.transform.parent);
+                selectMode.name = "NextMode";
+                selectMode.InteractName = $"切换播放模式";
+                selectMode.enabled = true;
+                selectMode.MarkerActive = true;
+                selectMode.interactableGroup = ___otherInterablesInGroup[0].interactableGroup;
+                selectMode.OnInteractStartEvent.RemoveAllListeners();
+                selectMode.OnInteractFinishedEvent.RemoveAllListeners();
+                //selectMode.OnInteractFinishedEvent.AddListener(HandleInteractFinished);
+                ___otherInterablesInGroup.Add(selectMode);
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(InteractableBase), nameof(InteractableBase.StartInteract))]
+        public static bool StartInteractPrefix(InteractableBase __instance, CharacterMainControl _interactCharacter)
+        {
+            if (__instance.name == "NextMode")
+            {
+                // 阻止原逻辑，包括虚方法和静态事件
+                ModLogger.LogInformation("next mode pressed");
+                HandleInteractFinished(_interactCharacter, __instance);
+                return false; // false => 阻止原 StartInteract 执行
+            }
+            return true;
+        }
+
+
+        public static void HandleInteractFinished(CharacterMainControl _, InteractableBase interactable)
+        {
+            ModLogger.LogInformation($"handle interact finfished, interact is: {interactable.name},{interactable.InteractName}");
+            NextMode();
+            var msg = $"已切换至：[{MusicPlayer.LoopModePlainText}]";
+            DialogueBubblesManager.Show(msg, interactable.transform, 0.8f, false, false, 200f, 2f).Forget();
+        }
+        public static void HandleInteractStart(InteractableBase interactable)
+        {
+            ModLogger.LogInformation($"handle interact called, interact is: {interactable.name},{interactable.InteractName}");
+        }
+
+        public static void SaveIndex() => SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
+
+        public static void NextMode()
+        {
+            var currentMode = (int)MusicPlayer.LoopMode;
+            MusicPlayer.LoopMode = (LoopMode)(++currentMode % 4);;
+        }
         public static void HandleSceneChanged(SceneLoadingContext context)
         {
             // 切换场景时获取绑定通道的音量
@@ -175,7 +249,6 @@ namespace Modding.CustomBaseBgm
             {
                 Task.Run(() => MusicPlayer.FadeToAsync(3f));
                 ModLogger.LogInformation("runtime music stoped!");
-                SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
             }
         }
     }

@@ -1,5 +1,7 @@
 ﻿using BepInEx;
+using Modding.Core;
 using Modding.Core.PluginLoader;
+using Saves;
 
 namespace Modding.MusicEarphone
 {
@@ -15,13 +17,15 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnEnable()
         {
+            Util.LoadingMode = LoadingMode.BepInEx;
             Harmony.PatchAll();
             ModLogger!.LogInformation("mod is enabled by bepinex");
             ModLogger!.LogInformation("scene loader handler enabled!");
             MusicEarphonePatch.LoadEarphoneMusics();
-            LevelManager.OnLevelBeginInitializing += MusicEarphonePatch.HandleSceneChanged;
+            SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;
             CharacterMainControl.OnMainCharacterSlotContentChangedEvent += MusicEarphonePatch.HandleSlotContentChanged;
             AIMainBrain.OnSoundSpawned += MusicEarphonePatch.HandleSoundSpawned;
+            SavesSystem.OnCollectSaveData += MusicEarphonePatch.SaveIndex;
         }
 
         /// <summary>
@@ -30,16 +34,9 @@ namespace Modding.MusicEarphone
         public override void OnDisable()
         {
             //base.OnDisable();
-            //LevelManager.OnLevelInitialized -= MusicEarphonePatch.HandleSceneChanged;
+            //SceneLoader.onStartedLoadingScene -= MusicEarphonePatch.HandleSceneChanged;
             ModLogger!.LogInformation("plugin disabled!");
         }
 
-        /// <summary>
-        ///     销毁对象时调用
-        /// </summary>
-        public override void OnDestroy()
-        {
-            //_harmony.UnpatchAll();
-        }
     }
 }

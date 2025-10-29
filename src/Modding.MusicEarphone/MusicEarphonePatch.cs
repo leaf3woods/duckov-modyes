@@ -7,7 +7,6 @@ using ItemStatsSystem.Items;
 using Modding.Core;
 using Modding.Core.MusicPlayer.Base;
 using Modding.Core.MusicPlayer.FMod;
-using Modding.Core.PluginLoader;
 using Saves;
 using SodaCraft.Localizations;
 using SodaCraft.StringUtilities;
@@ -22,17 +21,17 @@ namespace Modding.MusicEarphone
     ///     the patch for music earphone
     /// </summary>
     [HarmonyPatch]
-    public class MusicEarphonePatch
+    public class MusicEarphonePatch : PatchBase
     {
-        public static ModLogger ModLogger = (BepInExBase.ModLogger ?? ModBehaviourBase.ModLogger)!;
+        private static ModLogger ModLogger { get; set; } = null!;
 
         public const string LevelSceneName = "Level";
         public const string BaseSceneName = "Base";
         public const string MasterBus = "Master";
         public const string MusicBus = "Master/Music";
-        private const float _factor = 0.5f;
+        private const float _factor = 0.3f;
 
-        private const int interval = 3;
+        private const int interval = 5;
         private const int _earphoneTypeid = 1252;
 
         /// <summary>
@@ -47,6 +46,11 @@ namespace Modding.MusicEarphone
         private static Timer _timer = new Timer();
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
+
+        protected override void InitializeLogger()
+        {
+            ModLogger = ModLogger.Initialize<MusicEarphonePatch>(Util.LoadingMode, Util.PluginName);
+        }
 
         public async static UniTaskVoid InitializeEarphoneItemAsync()
         {
@@ -64,6 +68,7 @@ namespace Modding.MusicEarphone
                 var earphone = await ItemAssetsCollection.InstantiateAsync(_earphoneTypeid);
                 earphone.name = "music earphone";
                 earphone.DisplayNameRaw = "音乐耳机";
+                earphone.Quality = 2333;
                 earphone.DisplayQuality = DisplayQuality.Red;
                 earphone.Value = 2333;
                 PlayerStorage.Push(earphone, true);
@@ -102,10 +107,9 @@ namespace Modding.MusicEarphone
             //var isVisiable = ((bool)sound.fromCharacter && (bool)sound.fromCharacter.characterModel &&
             //    !sound.fromCharacter.characterModel.Hidden && !GameCamera.Instance.IsOffScreen(sound.pos));
             //周围有鸭子进入战斗状态暂停
-            if (MusicPlayer.IsPlaying &&
+            if (MusicPlayer.IsPlaying && !MusicPlayer.IsPasued &&
                 Team.IsEnemy(Teams.player, sound.fromTeam) &&
-                (bool)sound.fromCharacter && (bool)sound.fromCharacter.characterModel &&
-                sound.soundType == SoundTypes.combatSound)
+                sound.fromCharacter && sound.fromCharacter.characterModel && !GameCamera.Instance.IsOffScreen(sound.pos))
             {
                 MusicPlayer.TogglePause(true);
                 ModLogger.LogInformation("enemy in combat, music paused!");
@@ -116,9 +120,8 @@ namespace Modding.MusicEarphone
 
         public static void HandleSlotContentChanged(CharacterMainControl main, Slot slot)
         {
-            if (slot is null || main is null) return;
-            var itemName = slot.Content is null ? "无" : slot.Content.DisplayNameRaw;
-            ModLogger.LogInformation($"slot content changed, name: {slot.DisplayName}, item: {itemName}!");
+            if (slot is null || slot.Key != "Headset" || main is null ||
+                LevelManager.Instance is null || LevelManager.Instance.IsBaseLevel) return;
             if (MusicPlayer.Count == 0)
             {
                 ModLogger.LogInformation($"musics not exist, skipped playing!");
@@ -133,7 +136,7 @@ namespace Modding.MusicEarphone
             }
             else
             {
-                ModLogger.LogInformation($"headset slot is added, now playing music!");
+                ModLogger.LogInformation($"headset slot is added content: {slot.Content.DisplayNameRaw}, now playing music!");
                 MusicPlayer.Play(-1);
                 var bgmInfoFormat = "BGMInfoFormat".ToPlainText();
                 msg = bgmInfoFormat.Format(new
@@ -181,15 +184,24 @@ namespace Modding.MusicEarphone
                 ModLogger.LogInformation($"earphone musics loaded! total {files.Count()} musics.");
             }
         }
-
-        public static void HandleSceneChanged()
+        public static void SaveIndex() => SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
+        public static void HandleSceneChanged(SceneLoadingContext context)
         {
-            var level = LevelManager.GetCurrentLevelInfo();
             // 切换场景时获取绑定通道的音量
             MasterVolume = AudioManager.GetBus(MusicBus).Volume;
             MusicVolume = AudioManager.GetBus(MasterBus).Volume;
-            ModLogger.LogInformation($"current sceneName is {level.sceneName}, current volume is {EarphoneVolume * 100f:0}");
-            if (level.isBaseLevel)
+            ModLogger.LogInformation($"current sceneName is {context.sceneName}, current volume is {EarphoneVolume * 100f:0}");
+            //进入地图后开始加载
+            if (context.sceneName.Contains(LevelSceneName))
+            {
+                if(_lastSceneName == BaseSceneName && false)
+                {
+                    var index = SavesSystem.Load<int>(Util.PluginName);
+                    MusicPlayer.Play(index);
+                }
+                _lastSceneName = context.sceneName;
+            }
+            else
             {
                 MusicPlayer.Stop();
                 _timer.Stop();
@@ -198,17 +210,6 @@ namespace Modding.MusicEarphone
                     InitializeEarphoneItemAsync().Forget();
                     _initialized = true;
                 }
-                SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
-            }
-            //进入地图后开始加载
-            if (level.sceneName.Contains(LevelSceneName))
-            {
-                if(_lastSceneName == BaseSceneName && false)
-                {
-                    var index = SavesSystem.Load<int>(Util.PluginName);
-                    MusicPlayer.Play(index);
-                }
-                _lastSceneName = level.sceneName;
             }
         }
     }

@@ -1,4 +1,6 @@
 ﻿
+using Modding.Core.MusicPlayer.Base;
+
 namespace Modding.Core
 {
     public class Shared

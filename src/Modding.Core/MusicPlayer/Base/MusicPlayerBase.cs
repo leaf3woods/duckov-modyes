@@ -80,6 +80,18 @@ namespace Modding.Core.MusicPlayer.Base
             return array;
         }
 
+        public string LoopModePlainText
+        {
+            get => LoopMode switch
+            {
+                LoopMode.None => "停止",
+                LoopMode.Single => "单曲循环",
+                LoopMode.Random => "随机循环",
+                LoopMode.Loop => "列表循环",
+                _ => "未知"
+            };
+        }
+
         public async Task FadeToAsync(float duration, float target = 0)
         {
             const int steps = 50;

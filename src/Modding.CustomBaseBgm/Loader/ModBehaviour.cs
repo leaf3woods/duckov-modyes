@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
+using Modding.Core;
 using Modding.Core.PluginLoader;
+using Saves;
 
 namespace Modding.CustomBaseBgm
 {
@@ -13,9 +15,11 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnEnable()
         {
+            Util.LoadingMode = LoadingMode.None;
             Harmony.PatchAll();
             ModLogger!.LogInformation("mod is patched by offical plugin");
-            SceneLoader.onBeforeSetSceneActive += BaseBgmPatch.HandleSceneChanged;
+            SceneLoader.onStartedLoadingScene += BaseBgmPatch.HandleSceneChanged;
+            SavesSystem.OnCollectSaveData += BaseBgmPatch.SaveIndex;
         }
 
         /// <summary>
@@ -23,7 +27,8 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            SceneLoader.onBeforeSetSceneActive -= BaseBgmPatch.HandleSceneChanged;
+            SceneLoader.onStartedLoadingScene -= BaseBgmPatch.HandleSceneChanged;
+            SavesSystem.OnCollectSaveData -= BaseBgmPatch.SaveIndex;
         }
     }
 }

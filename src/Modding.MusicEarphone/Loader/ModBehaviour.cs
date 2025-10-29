@@ -1,4 +1,6 @@
-﻿using Modding.Core.PluginLoader;
+﻿using Modding.Core;
+using Modding.Core.PluginLoader;
+using Saves;
 
 namespace Modding.MusicEarphone
 {
@@ -12,10 +14,13 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnEnable()
         {
+            Util.LoadingMode = LoadingMode.None;
+            Harmony.PatchAll();
             MusicEarphonePatch.LoadEarphoneMusics();
-            LevelManager.OnLevelBeginInitializing += MusicEarphonePatch.HandleSceneChanged;
+            SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;
             CharacterMainControl.OnMainCharacterSlotContentChangedEvent += MusicEarphonePatch.HandleSlotContentChanged;
             AIMainBrain.OnSoundSpawned += MusicEarphonePatch.HandleSoundSpawned;
+            SavesSystem.OnCollectSaveData += MusicEarphonePatch.SaveIndex;
         }
 
         /// <summary>
@@ -23,9 +28,10 @@ namespace Modding.MusicEarphone
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            LevelManager.OnLevelBeginInitializing -= MusicEarphonePatch.HandleSceneChanged;
+            SceneLoader.onStartedLoadingScene -= MusicEarphonePatch.HandleSceneChanged;
             CharacterMainControl.OnMainCharacterSlotContentChangedEvent -= MusicEarphonePatch.HandleSlotContentChanged;
             AIMainBrain.OnSoundSpawned -= MusicEarphonePatch.HandleSoundSpawned;
+            SavesSystem.OnCollectSaveData -= MusicEarphonePatch.SaveIndex;
         }
     }
 }

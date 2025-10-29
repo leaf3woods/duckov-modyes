@@ -16,7 +16,7 @@ namespace Modding.Core.PluginLoader
         /// </summary>
         protected abstract string PluginName { get; }
 
-        public static ModLogger? ModLogger { get; set; }
+        public ModLogger? ModLogger { get; set; }
 
         /// <summary>
         ///     脚本启用的第一帧调用
