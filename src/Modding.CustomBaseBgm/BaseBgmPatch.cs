@@ -32,7 +32,6 @@ namespace Modding.CustomBaseBgm
         public static float BgmMasterVolume = 1f;
         public const string MusicBus = "Master/Music";
         public static float BgmMusicVolume = 0.5f;
-        private static int _savedIndex = -1;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
         private static bool isEventRegisterd = false;
@@ -196,7 +195,8 @@ namespace Modding.CustomBaseBgm
         [HarmonyPatch(typeof(InteractableBase), "Start")]
         public static void InteractableBaseStartPostfix(InteractableBase __instance, ref List<InteractableBase> ___otherInterablesInGroup)
         {
-            if (___otherInterablesInGroup.Count == 1 && ___otherInterablesInGroup[0] && ___otherInterablesInGroup[0].name == "Last")
+            if (___otherInterablesInGroup.Count == 1 && ___otherInterablesInGroup[0] &&
+                ___otherInterablesInGroup[0].name == "Last")
             {
                 ModLogger.LogInformation("add player mode interact...");
                 var original = ___otherInterablesInGroup[0];
@@ -210,6 +210,17 @@ namespace Modding.CustomBaseBgm
                 selectMode.OnInteractFinishedEvent.RemoveAllListeners();
                 //selectMode.OnInteractFinishedEvent.AddListener(HandleInteractFinished);
                 ___otherInterablesInGroup.Add(selectMode);
+
+                var togglePausle = UnityEngine.Object.Instantiate(original, original.transform.parent);
+                togglePausle.name = "TogglePause";
+                togglePausle.InteractName = $"暂停/播放";
+                togglePausle.enabled = true;
+                togglePausle.MarkerActive = true;
+                togglePausle.interactableGroup = ___otherInterablesInGroup[0].interactableGroup;
+                togglePausle.OnInteractStartEvent.RemoveAllListeners();
+                togglePausle.OnInteractFinishedEvent.RemoveAllListeners();
+                //selectMode.OnInteractFinishedEvent.AddListener(HandleInteractFinished);
+                ___otherInterablesInGroup.Add(togglePausle);
             }
         }
 
@@ -219,22 +230,25 @@ namespace Modding.CustomBaseBgm
         {
             if (__instance.name == "NextMode")
             {
-                // 阻止原逻辑，包括虚方法和静态事件
-                ModLogger.LogInformation("next mode pressed");
-                HandleInteractFinished(_interactCharacter, __instance);
+                // 阻止原逻辑
+                ModLogger.LogInformation($"handle interact finfished, interact is: {__instance.name}, {__instance.InteractName}");
+                NextMode();
+                var msg = $"已切换至：[{MusicPlayer.LoopModePlainText}]!";
+                DialogueBubblesManager.Show(msg, __instance.transform, 0.8f, false, false, 200f, 2f).Forget();
+                return false; // false => 阻止原 StartInteract 执行
+            }
+            else if (__instance.name == "TogglePause")
+            {
+                // 阻止原逻辑
+                ModLogger.LogInformation($"handle interact finfished, interact is: {__instance.name}, {__instance.InteractName}");
+                MusicPlayer.TogglePause();
+                var msg = $"已 [{(MusicPlayer.IsPasued ? "暂停" : "恢复")}]!";
+                DialogueBubblesManager.Show(msg, __instance.transform, 0.8f, false, false, 200f, 2f).Forget();
                 return false; // false => 阻止原 StartInteract 执行
             }
             return true;
         }
 
-
-        public static void HandleInteractFinished(CharacterMainControl _, InteractableBase interactable)
-        {
-            ModLogger.LogInformation($"handle interact finfished, interact is: {interactable.name},{interactable.InteractName}");
-            NextMode();
-            var msg = $"已切换至：[{MusicPlayer.LoopModePlainText}]";
-            DialogueBubblesManager.Show(msg, interactable.transform, 0.8f, false, false, 200f, 2f).Forget();
-        }
         public static void HandleInteractStart(InteractableBase interactable)
         {
             ModLogger.LogInformation($"handle interact called, interact is: {interactable.name},{interactable.InteractName}");
@@ -245,8 +259,9 @@ namespace Modding.CustomBaseBgm
         public static void NextMode()
         {
             var currentMode = (int)MusicPlayer.LoopMode;
-            MusicPlayer.LoopMode = (LoopMode)(++currentMode % 4);;
+            MusicPlayer.LoopMode = (LoopMode)(++currentMode % 4);
         }
+
         public static void HandleSceneChanged(SceneLoadingContext context)
         {
             // 切换场景时获取绑定通道的音量

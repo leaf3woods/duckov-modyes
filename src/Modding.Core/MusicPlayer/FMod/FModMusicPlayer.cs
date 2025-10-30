@@ -135,7 +135,7 @@ namespace Modding.Core.MusicPlayer.FMod
         {
             if (IsPlaying)
             {
-                IsPasued = paused is null ? IsPasued : paused.Value;
+                IsPasued = paused is null ? !IsPasued : paused.Value;
                 _currentChannel.setPaused(IsPasued);
             }
         }
