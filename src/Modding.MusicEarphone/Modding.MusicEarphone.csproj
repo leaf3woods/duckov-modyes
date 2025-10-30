@@ -13,7 +13,7 @@
 		<Configurations>Debug;Release</Configurations>
 	</PropertyGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(CI)'!='true'">
 		<Reference Include="$(GameScriptsPath)\TeamSoda.*">
 			<Private>False</Private>
 			<Pack>false</Pack>
@@ -42,6 +42,9 @@
 			<Private>False</Private>
 			<Pack>false</Pack>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
 		<Reference Include="..\..\dependency\Patching\*.dll">
 		</Reference>
 	</ItemGroup>

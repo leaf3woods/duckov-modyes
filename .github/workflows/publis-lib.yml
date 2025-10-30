@@ -1,19 +1,18 @@
-name: Build and Package .NET Standard Library
+name: Build and Package Mods
 
 on:
   push:
-#    branches: [ "main" ]     # 推送到 main 分支时自动构建
     tags:
-      - 'v*'                 # 打 tag（v1.0.0）时发布 Release
+      - 'v*'  # 打 tag 时触发（例如 v1.0.0）
 
 jobs:
   build:
-    name: Build & Pack Library
-    runs-on: ${{ matrix.os }}
+    name: Build & Package Mods
+    runs-on: windows-latest
+
     strategy:
       matrix:
-        os: [windows-latest]
-        dotnet: [ '8.0.x' ]   # 用 .NET 8 SDK 编译 .NET Standard 2.1 库是完全支持的
+        dotnet: [ '8.0.x' ]
 
     steps:
     # 1️⃣ 检出代码
@@ -30,40 +29,51 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    # 4️⃣ 编译（生成 bin/Release）
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    # 4️⃣ 构建 Modding.Core（因为其他模块依赖它）
+    - name: Build Core Library
+      run: dotnet build ./src/Modding.Core/Modding.Core.csproj -c Release --no-restore
+      env:
+        CI: true
 
-    # 5️⃣ 打包 NuGet 包（可选）
-    - name: Pack NuGet package
-      run: dotnet pack ./YourLibraryProject.csproj -c Release -o ./publish --include-symbols
+    # 5️⃣ 构建并打包两个模块
+    - name: Build CustomBaseBgm
+      run: |
+        dotnet build ./src/Modding.CustomBaseBgm/Modding.CustomBaseBgm.csproj -c Release --no-restore
+        mkdir -Force ./publish/CustomBaseBgm
+        Copy-Item ./src/Modding.CustomBaseBgm/bin/Release/* ./publish/CustomBaseBgm -Recurse
+      env:
+        CI: true
 
-    # 6️⃣ 打包 ZIP
-    - name: Zip compiled output
+    - name: Build MusicEarphone
+      run: |
+        dotnet build ./src/Modding.MusicEarphone/Modding.MusicEarphone.csproj -c Release --no-restore
+        mkdir -Force ./publish/MusicEarphone
+        Copy-Item ./src/Modding.MusicEarphone/bin/Release/* ./publish/MusicEarphone -Recurse
+      env:
+        CI: true
+
+    # 6️⃣ 压缩两个包（带版本号和平台信息）
+    - name: Create ZIP packages
       shell: pwsh
       run: |
-        $zipName = "publish-${{ matrix.os }}.zip"
-        Compress-Archive -Path "./publish/*" -DestinationPath $zipName
-        echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+        $version = "${{ github.ref_name }}"
+        $os = "windows"
+        Compress-Archive -Path ./publish/CustomBaseBgm/* -DestinationPath "./publish/CustomBaseBgm_${version}_${os}.zip"
+        Compress-Archive -Path ./publish/MusicEarphone/* -DestinationPath "./publish/MusicEarphone_${version}_${os}.zip"
 
-    # 7️⃣ 上传构建产物
+
+    # 7️⃣ 上传构建产物（用于后续 Release）
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: publish-${{ matrix.os }}
-        path: ./publish
-
-    - name: Upload zip file
-      uses: actions/upload-artifact@v4
-      with:
-        name: publish-${{ matrix.os }}-zip
-        path: ${{ env.ZIP_NAME }}
+        name: mod-packages
+        path: ./publish/*.zip
 
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')   # 仅在打 tag 时发布
+    if: startsWith(github.ref, 'refs/tags/v')   # 仅在打 tag 时执行
 
     steps:
     - name: Checkout repository
@@ -72,6 +82,7 @@ jobs:
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
+        name: mod-packages
         path: ./artifacts
 
     - name: Create GitHub Release
@@ -80,10 +91,14 @@ jobs:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
-          📦 自动构建的 .NET Standard 2.1 库
-          ✅ 平台：Windows + Linux
+          🎵 自动构建的游戏 Mod 包
+          ✅ 包含：
+            - CustomBaseBgm（自定义背景音乐模块）
+            - MusicEarphone（音乐耳机模块）
           🕓 构建时间：${{ github.run_id }}
         files: |
-          ./artifacts/**/publish-*.zip
+          ./artifacts/CustomBaseBgm_v*windows.zip
+          ./artifacts/MusicEarphone_v*windows.zip
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

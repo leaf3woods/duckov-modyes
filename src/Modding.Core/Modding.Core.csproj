@@ -8,12 +8,10 @@
 		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(CI)'!='true'">
 		<Reference Include="$(GameScriptsPath)\FMODUnity.dll">
 			<Private>False</Private>
 			<Pack>false</Pack>
-		</Reference>
-		<Reference Include="..\..\dependency\Patching\*.dll">
 		</Reference>
 		<Reference Include="$(GameScriptsPath)\UnityEngine.Core*.dll">
 			<Private>False</Private>
@@ -28,4 +26,10 @@
 			<Pack>false</Pack>
 		</Reference>
 	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="..\..\dependency\Patching\*.dll">
+		</Reference>
+	</ItemGroup>
+	
 </Project>

@@ -14,7 +14,7 @@
 		<!--<AssemblyName>CustomBaseBgm</AssemblyName>-->
 	</PropertyGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(CI)'!='true'">
 		<Reference Include="$(GameScriptsPath)\TeamSoda.*">
 			<Private>False</Private>
 			<Pack>false</Pack>   
@@ -39,12 +39,15 @@
 			<Private>False</Private>
 			<Pack>false</Pack>   
 		</Reference>
-		<Reference Include="..\..\dependency\Patching\*.dll">
-		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Modding.Core\Modding.Core.csproj" />
+		<Reference Include="..\..\dependency\Patching\*.dll">
+		</Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\Modding.Core\Modding.Core.csproj" />
 	</ItemGroup>
 
 	<Target Name="CopyPublishFiles" AfterTargets="Build">
