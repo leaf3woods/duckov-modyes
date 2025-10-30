@@ -41,6 +41,13 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(CI)'=='true'">
+		<Reference Include="..\..\dependency\Game\*.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+	</ItemGroup>
+
 	<ItemGroup>
 		<Reference Include="..\..\dependency\Patching\*.dll">
 		</Reference>
