@@ -10,6 +10,8 @@
 
 * [自定义基地BGM使用说明](doc/CustomBaseBGM.md)
 
+*  [MOD文件下载地址]([Releases · leaf3woods/duckov-modyes](https://github.com/leaf3woods/duckov-modyes/releases))
+
 * 预览：
 
   <center>
@@ -21,8 +23,8 @@
 #### 音乐耳机MOD
 
 * 用于给耳机加上自定义音乐，成为真正的耳机
-
 * [音乐耳机使用说明](doc/CustomMusicPhone.md)
+*  [MOD文件下载地址]([Releases · leaf3woods/duckov-modyes](https://github.com/leaf3woods/duckov-modyes/releases))
 * 预览：
 
 <center>

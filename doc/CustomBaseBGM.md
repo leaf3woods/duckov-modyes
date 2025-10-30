@@ -29,7 +29,7 @@
 
 1. 创意工坊用户，点击订阅即可
 
-2. 若要手动安装可以把本仓库 release文件下载后解压到：[游戏exe目录]\Duckov_Data\Mods\ 文件夹下：
+2. 若要手动安装可以把本仓库  [release文件]([Releases · leaf3woods/duckov-modyes](https://github.com/leaf3woods/duckov-modyes/releases))下载后解压到：[游戏exe目录]\Duckov_Data\Mods\ 文件夹下：
    
    ```
    [游戏exe目录]\Duckov_Data\Mods\
@@ -44,7 +44,7 @@
    └─...其他Mod文件夹
    ```
 
-3. 若要使用BepInEX安装，将BepInEX release文件下载后解压到：[游戏exe目录]，把本仓库release文件下载后解压到：[游戏exe目录]\BepInEx\plugins\ 的文件夹下：
+3. 若要使用BepInEX安装，把本仓库 [release文件]([Releases · leaf3woods/duckov-modyes](https://github.com/leaf3woods/duckov-modyes/releases))下载后解压到：[游戏exe目录]\BepInEx\plugins\ 的文件夹下：
 
 ```
 [游戏exe目录]\BepInEx\plugins\
