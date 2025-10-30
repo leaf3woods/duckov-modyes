@@ -1,6 +1,5 @@
 ﻿using Modding.Core;
 using Modding.Core.PluginLoader;
-using Saves;
 
 namespace Modding.MusicEarphone
 {
@@ -9,18 +8,24 @@ namespace Modding.MusicEarphone
         protected override string PluginId => Util.BepinExUuid;
         protected override string PluginName => Util.PluginName;
 
+        public override void InitializeLogger()
+        {
+            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.None, Util.PluginName);
+            ModLogger = MusicEarphonePatch.ModLogger;
+        }
+
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
         public override void OnEnable()
         {
-            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.None, Util.PluginName);
-            Harmony.PatchAll();
-            MusicEarphonePatch.LoadEarphoneMusics();
-            SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;
-            CharacterMainControl.OnMainCharacterSlotContentChangedEvent += MusicEarphonePatch.HandleSlotContentChanged;
-            AIMainBrain.OnSoundSpawned += MusicEarphonePatch.HandleSoundSpawned;
-            SavesSystem.OnCollectSaveData += MusicEarphonePatch.SaveIndex;
+            if (MusicEarphonePatch.InitPatchDependency())
+            {
+                Harmony.PatchAll();
+                ModLogger.LogInformation("mod is enabled by offical plugin");
+                MusicEarphonePatch.ToggleEvent();
+                ModLogger.LogInformation("event handler enabled!");
+            }
         }
 
         /// <summary>
@@ -28,10 +33,8 @@ namespace Modding.MusicEarphone
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            SceneLoader.onStartedLoadingScene -= MusicEarphonePatch.HandleSceneChanged;
-            CharacterMainControl.OnMainCharacterSlotContentChangedEvent -= MusicEarphonePatch.HandleSlotContentChanged;
-            AIMainBrain.OnSoundSpawned -= MusicEarphonePatch.HandleSoundSpawned;
-            SavesSystem.OnCollectSaveData -= MusicEarphonePatch.SaveIndex;
+            MusicEarphonePatch.ToggleEvent();
+            ModLogger.LogInformation("event handler disabled!");
         }
     }
 }

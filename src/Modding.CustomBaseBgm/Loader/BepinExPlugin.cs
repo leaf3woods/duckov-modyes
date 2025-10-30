@@ -11,16 +11,24 @@ namespace Modding.CustomBaseBgm
         protected override string PluginId => Util.BepinExUuid;
         protected override string PluginName => Util.PluginName;
 
+        public override void InitializeLogger()
+        {
+            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.BepInEx, Util.PluginName);
+            ModLogger = BaseBgmPatch.ModLogger;
+        }
+
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
         public override void OnEnable()
         {
-            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.BepInEx, Util.PluginName);
-            Harmony.PatchAll();
-            ModLogger!.LogInformation("mod is enabled by bepinex");
-            SceneLoader.onStartedLoadingScene += BaseBgmPatch.HandleSceneChanged;
-            ModLogger.LogInformation("scene loader handler enabled!");
+            if (BaseBgmPatch.InitPatchDependency())
+            {
+                Harmony.PatchAll();
+                ModLogger.LogInformation("mod is enabled by bepinex");
+                BaseBgmPatch.ToggleEvent();
+                ModLogger.LogInformation("event handler enabled!");
+            }
         }
 
         /// <summary>
@@ -28,9 +36,8 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnDisable()
         {
-            //base.OnDisable();
-            //SceneLoader.onStartedLoadingScene -= BaseBgmPatch.HandleSceneChanged;
-            ModLogger!.LogInformation("scene loader handler disabled!");
+            //BaseBgmPatch.ToggleEvent();
+            ModLogger.LogInformation("event handler disabled!");
         }
     }
 }

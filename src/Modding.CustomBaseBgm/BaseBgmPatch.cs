@@ -1,12 +1,10 @@
 ﻿using Cysharp.Threading.Tasks;
 using Duckov;
-using Duckov.UI;
 using Duckov.UI.DialogueBubbles;
 using HarmonyLib;
 using Modding.Core;
 using Modding.Core.MusicPlayer.Base;
 using Modding.Core.MusicPlayer.FMod;
-using Modding.Core.PluginLoader;
 using Saves;
 using SodaCraft.StringUtilities;
 using System;
@@ -14,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace Modding.CustomBaseBgm
 {
@@ -22,7 +19,7 @@ namespace Modding.CustomBaseBgm
     ///     the patch for custom base BGM
     /// </summary>
     [HarmonyPatch(typeof(BaseBGMSelector))]
-    public class BaseBgmPatch : PatchBase
+    public class BaseBgmPatch : IPatching
     {
         public static ModLogger ModLogger { get; set; } = null!;
 
@@ -35,53 +32,83 @@ namespace Modding.CustomBaseBgm
         public static float BgmMasterVolume = 1f;
         public const string MusicBus = "Master/Music";
         public static float BgmMusicVolume = 0.5f;
+        private static int _savedIndex = -1;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
+        private static bool isEventRegisterd = false;
+
+        public static bool InitPatchDependency()
+        {
+            try
+            {
+                ModLogger.LogInformation($"bgm load patched!");
+                var bgmDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
+                if (!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
+                var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedMusicExtensions
+                    .SelectMany(pa => Directory.GetFiles(bgmDir, pa))
+                    .Select(f =>
+                    {
+                        var truename = Path.GetFileNameWithoutExtension(f);
+                        var spits = truename.Split('-', StringSplitOptions.RemoveEmptyEntries);
+                        var entry = new BaseBGMSelector.Entry
+                        {
+                            switchName = Path.GetFileNameWithoutExtension(f),
+                            musicName = spits[0],
+                            author = spits.LastOrDefault() ?? "Unknown",
+                        };
+                        return new FModMusic<BaseBGMSelector.Entry>()
+                        {
+                            Info = entry,
+                            Sound = f,
+                        };
+                    });
+                if (files.Any())
+                {
+                    MusicPlayer.Start(LoopMode.Random, BgmVolume, ShuffleMode.FisherYates, false);
+                    MusicPlayer.Load(files);
+                    ModLogger.LogInformation($"custom bgm loaded! total {files.Count()} musics.");
+                    return true;
+                }
+                else
+                {
+                    ModLogger.LogWarning("no custom bgm found! use default.");
+                    return false;
+                }
+            }
+            catch
+            {
+                ModLogger.LogError($"init patch failure!");
+                return false;
+            }
+        }
+        public static void ToggleEvent()
+        {
+            if (!isEventRegisterd)
+            {
+                SceneLoader.onStartedLoadingScene += HandleSceneChanged;
+                SavesSystem.OnCollectSaveData += SaveIndex;
+            }
+            else
+            {
+                SceneLoader.onStartedLoadingScene -= HandleSceneChanged;
+                SavesSystem.OnCollectSaveData -= SaveIndex;
+            }
+            isEventRegisterd = !isEventRegisterd;
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch("Load")]
         public static bool LoadPrefixPatch(BaseBGMSelector __instance, bool play)
         {
-            ModLogger.LogInformation($"bgm load patched!");
-            var bgmDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
-            if(!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
-            var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedMusicExtensions
-                .SelectMany(pa => Directory.GetFiles(bgmDir, pa))
-                .Select(f =>
-                {
-                    var truename = Path.GetFileNameWithoutExtension(f);
-                    var spits = truename.Split('-', StringSplitOptions.RemoveEmptyEntries);
-                    var entry = new BaseBGMSelector.Entry
-                    {
-                        switchName = Path.GetFileNameWithoutExtension(f),
-                        musicName = spits[0],
-                        author = spits.LastOrDefault() ?? "Unknown",
-                    };
-                    return new FModMusic<BaseBGMSelector.Entry>()
-                    {
-                        Info = entry,
-                        Sound = f,
-                    };
-                });
-            if (files.Any())
-            {
-                MusicPlayer.Start(LoopMode.Random, BgmVolume, ShuffleMode.FisherYates, false);
-                MusicPlayer.Load(files);
-                ModLogger.LogInformation($"custom bgm loaded! total {files.Count()} musics.");
-                return false; // continue original method
-            }
-            else
-            {
-                ModLogger.LogWarning("no custom bgm found! use default.");
-                return true; // continue original method
-            }
+            //音乐加载成功, 拦截原先的音乐
+            if (MusicPlayer.Count != 0) return false;
+            return true;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch("Set", new Type[] { typeof(int), typeof(bool), typeof(bool) })]
         public static bool SetPrefixPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy, bool showInfo, bool play)
         {
-            if(MusicPlayer.Count == 0) return true; // continue original method
             AudioManager.StopBGM();
             
             if (play)
@@ -115,7 +142,6 @@ namespace Modding.CustomBaseBgm
         [HarmonyPatch("SetNext")]
         public static bool SetNextPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy)
         {
-            if(MusicPlayer.Count == 0) return true; // continue original method
             AudioManager.StopBGM();
             
             MusicPlayer.Next();
@@ -135,7 +161,6 @@ namespace Modding.CustomBaseBgm
         [HarmonyPatch("SetPrevious")]
         public static bool SetPreviousPatch(BaseBGMSelector __instance, ref DialogueBubbleProxy ___proxy)
         {
-            if (MusicPlayer.Count == 0) return true; // continue original method
             AudioManager.StopBGM();
 
             MusicPlayer.Previous();
@@ -165,17 +190,6 @@ namespace Modding.CustomBaseBgm
             }
             //  当用户调整此总线上的音量时，设置运行时音乐
             MusicPlayer?.ApplyVolume(BgmVolume);
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(KontextMenu), "Show", new Type[] { typeof(object), typeof(RectTransform), typeof(KontextMenuDataEntry[]) })]
-        public static bool ShowRectPrefixPatch(KontextMenu __instance, object target, RectTransform watchRectTransform, ref KontextMenuDataEntry[] entries)
-        {
-            var toshows = entries.Select(e => e.text);
-            ModLogger.LogInformation($"rect: {watchRectTransform.name} show up, text is: " + string.Join(',', toshows));
-            //var msg = $"当前播放模式：[{NextMode()}]";
-            //DialogueBubblesManager.Show(msg, watchRectTransform.transform, 1, false, false, 200f, 2f).Forget();
-            return true;
         }
 
         [HarmonyPostfix]

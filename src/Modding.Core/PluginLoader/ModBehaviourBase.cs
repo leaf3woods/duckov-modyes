@@ -16,7 +16,7 @@ namespace Modding.Core.PluginLoader
         /// </summary>
         protected abstract string PluginName { get; }
 
-        public ModLogger? ModLogger { get; set; }
+        protected ModLogger ModLogger { get; set; } = null!;
 
         /// <summary>
         ///     脚本启用的第一帧调用
@@ -30,14 +30,14 @@ namespace Modding.Core.PluginLoader
         /// </summary>
         public virtual void OnDestroy()
         {
-            ModLogger!.LogInformation("plugin object destroied");
+            ModLogger.LogInformation("plugin object destroied");
         }
 
         public virtual void OnDisable()
         {
             BeforeUnpatching();
             Harmony.UnpatchAll(PluginId);
-            ModLogger!.LogInformation("plugin object disabled");
+            ModLogger.LogInformation("plugin object disabled");
         }
 
         protected abstract void BeforeUnpatching();
@@ -49,11 +49,14 @@ namespace Modding.Core.PluginLoader
         /// </summary>
         public void Awake()
         {
+            InitializeLogger();
             ModLogger = ModLogger.Initialize<ModBehaviourBase>(LoadingMode.None, PluginName);
             ModLogger.LogInformation($"plugin enabled, patching harmony({PluginId})...");
             Harmony = new Harmony(PluginId);
             ModLogger.LogInformation("harmony is created by bepinex");
         }
+
+        public abstract void InitializeLogger();
 
         /// <summary>
         ///     每帧调用

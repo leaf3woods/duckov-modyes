@@ -21,7 +21,7 @@ namespace Modding.MusicEarphone
     ///     the patch for music earphone
     /// </summary>
     [HarmonyPatch]
-    public class MusicEarphonePatch : PatchBase
+    public class MusicEarphonePatch : IPatching
     {
         public static ModLogger ModLogger { get; set; } = null!;
 
@@ -44,19 +44,59 @@ namespace Modding.MusicEarphone
         private static bool _initialized = false;
         private static string _lastSceneName = BaseSceneName;
         private static Timer _timer = new Timer();
+        private static bool _isEventRegisterd = false;
+        private static int _savedIndex = -1;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
 
+        public static bool InitPatchDependency()
+        {
+            try
+            {
+                ModLogger.LogInformation($"loading earphone musics...");
+                var musicDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
+                if (!Directory.Exists(musicDir)) Directory.CreateDirectory(musicDir);
+                var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedMusicExtensions
+                    .SelectMany(pa => Directory.GetFiles(musicDir, pa))
+                    .Select(f =>
+                    {
+                        var truename = Path.GetFileNameWithoutExtension(f);
+                        var spits = truename.Split('-', StringSplitOptions.RemoveEmptyEntries);
+                        var entry = new BaseBGMSelector.Entry
+                        {
+                            switchName = Path.GetFileNameWithoutExtension(f),
+                            musicName = spits[0],
+                            author = spits.LastOrDefault() ?? "Unknown",
+                        };
+                        return new FModMusic<BaseBGMSelector.Entry>()
+                        {
+                            Info = entry,
+                            Sound = f,
+                        };
+                    });
+                if (files.Any())
+                {
+                    MusicPlayer.Start(LoopMode.Random, EarphoneVolume, ShuffleMode.FisherYates, false);
+                    MusicPlayer.Load(files);
+                    _savedIndex = SavesSystem.Load<int>(Util.PluginName);
+                    ModLogger.LogInformation($"earphone musics loaded! total {files.Count()} musics.");
+                    return true;
+                }
+                else
+                {
+                    ModLogger.LogWarning($"no earphone musics found in {musicDir}!");
+                    return false;
+                }
+            }
+            catch
+            {
+                ModLogger.LogError($"init patch failure!");
+                return false;
+            }
+        }
+
         public async static UniTaskVoid InitializeEarphoneItemAsync()
         {
-            //var ears = ItemAssetsCollection.Instance.entries
-            //    .Where(e =>
-            //        e.prefab.DisplayNameRaw.Contains("Headset") ||
-            //        e.prefab.DisplayName.Contains("Headset") ||
-            //        e.prefab.name.Contains("Headset"))
-            //    .Select(e => $"[type: {e.typeID}, name: {e.prefab.name}]");
-            //;
-            //ModLogger.LogInformation($"earphone names are: {string.Join(',', ears)}");
             var exist = PlayerStorage.IncomingItemBuffer.FirstOrDefault(item => item.RootTypeID == _earphoneTypeid);
             if(exist is null)
             {
@@ -69,6 +109,30 @@ namespace Modding.MusicEarphone
                 PlayerStorage.Push(earphone, true);
                 ModLogger.LogInformation($"give music earphone!");
             }
+        }
+        public static void ToggleEvent()
+        {
+            if (!_isEventRegisterd)
+            {
+                SceneLoader.onAfterSceneInitialize += HandleSceneChanged;
+                CharacterMainControl.OnMainCharacterSlotContentChangedEvent += HandleSlotContentChanged;
+                AIMainBrain.OnSoundSpawned += HandleSoundSpawned;
+                SavesSystem.OnCollectSaveData += SaveIndex;
+                LevelManager.OnEvacuated += HandleEvacuated;
+                Health.OnDead += HandleOnDead;
+                Health.OnHurt += HandleOnHurt;
+            }
+            else
+            {
+                SceneLoader.onAfterSceneInitialize -= HandleSceneChanged;
+                CharacterMainControl.OnMainCharacterSlotContentChangedEvent -= HandleSlotContentChanged;
+                AIMainBrain.OnSoundSpawned -= HandleSoundSpawned;
+                SavesSystem.OnCollectSaveData -= SaveIndex;
+                LevelManager.OnEvacuated -= HandleEvacuated;
+                Health.OnDead -= HandleOnDead;
+                Health.OnHurt -= HandleOnHurt;
+            }
+            _isEventRegisterd = !_isEventRegisterd;
         }
 
         /// <summary>
@@ -104,7 +168,8 @@ namespace Modding.MusicEarphone
             //周围有鸭子进入战斗状态暂停
             if (MusicPlayer.IsPlaying && !MusicPlayer.IsPasued &&
                 Team.IsEnemy(Teams.player, sound.fromTeam) &&
-                sound.fromCharacter && sound.fromCharacter.characterModel && !GameCamera.Instance.IsOffScreen(sound.pos))
+                sound.fromCharacter && sound.fromCharacter.characterModel &&
+                !GameCamera.Instance.IsOffScreen(sound.pos))
             {
                 MusicPlayer.TogglePause(true);
                 ModLogger.LogInformation("enemy in combat, music paused!");
@@ -149,36 +214,26 @@ namespace Modding.MusicEarphone
             DialogueBubblesManager.Show(msg, root, 0.8f, false, false, 200f, 2f).Forget();
         }
 
-        public static void LoadEarphoneMusics()
+        public static void HandleOnDead(Health health, DamageInfo info)
         {
-            ModLogger.LogInformation($"loading earphone musics...");
-            var musicDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
-            if (!Directory.Exists(musicDir)) Directory.CreateDirectory(musicDir);
-            var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedMusicExtensions
-                .SelectMany(pa => Directory.GetFiles(musicDir, pa))
-                .Select(f =>
-                {
-                    var truename = Path.GetFileNameWithoutExtension(f);
-                    var spits = truename.Split('-', StringSplitOptions.RemoveEmptyEntries);
-                    var entry = new BaseBGMSelector.Entry
-                    {
-                        switchName = Path.GetFileNameWithoutExtension(f),
-                        musicName = spits[0],
-                        author = spits.LastOrDefault() ?? "Unknown",
-                    };
-                    return new FModMusic<BaseBGMSelector.Entry>()
-                    {
-                        Info = entry,
-                        Sound = f,
-                    };
-                });
-            if (files.Any())
-            {
-                MusicPlayer.Start(LoopMode.Random, EarphoneVolume, ShuffleMode.FisherYates, false);
-                MusicPlayer.Load(files);
-                ModLogger.LogInformation($"earphone musics loaded! total {files.Count()} musics.");
-            }
+            MusicPlayer.Stop();
+            _timer.Stop();
         }
+
+        public static void HandleOnHurt(Health health, DamageInfo info)
+        {
+            MusicPlayer.TogglePause(true);
+            ModLogger.LogInformation("enemy in combat, music paused!");
+            _timer.Stop();   // 先停止
+            _timer.Start();  // 重新计时
+        }
+
+        public static void HandleEvacuated(EvacuationInfo evacuationInfo)
+        {
+            MusicPlayer.Stop();
+            _timer.Stop();
+        }
+
         public static void SaveIndex() => SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
         public static void HandleSceneChanged(SceneLoadingContext context)
         {
@@ -191,12 +246,11 @@ namespace Modding.MusicEarphone
             {
                 if(_lastSceneName == BaseSceneName && false)
                 {
-                    var index = SavesSystem.Load<int>(Util.PluginName);
-                    MusicPlayer.Play(index);
+                    MusicPlayer.Play(_savedIndex);
                 }
                 _lastSceneName = context.sceneName;
             }
-            else
+            else if (context.sceneName.Contains(BaseSceneName))
             {
                 MusicPlayer.Stop();
                 _timer.Stop();

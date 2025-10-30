@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using Modding.Core;
 using Modding.Core.PluginLoader;
-using Saves;
 
 namespace Modding.CustomBaseBgm
 {
@@ -10,16 +9,24 @@ namespace Modding.CustomBaseBgm
         protected override string PluginId => Util.BepinExUuid;
         protected override string PluginName => Util.PluginName;
 
+        public override void InitializeLogger()
+        {
+            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.None, Util.PluginName);
+            ModLogger = BaseBgmPatch.ModLogger;
+        }
+
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
         public override void OnEnable()
         {
-            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.None, Util.PluginName);
-            Harmony.PatchAll();
-            ModLogger!.LogInformation("mod is patched by offical plugin");
-            SceneLoader.onStartedLoadingScene += BaseBgmPatch.HandleSceneChanged;
-            SavesSystem.OnCollectSaveData += BaseBgmPatch.SaveIndex;
+            if (BaseBgmPatch.InitPatchDependency())
+            {
+                Harmony.PatchAll();
+                ModLogger.LogInformation("mod is enabled by offical plugin");
+                BaseBgmPatch.ToggleEvent();
+                ModLogger.LogInformation("event handler enabled!");
+            }
         }
 
         /// <summary>
@@ -27,8 +34,7 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            SceneLoader.onStartedLoadingScene -= BaseBgmPatch.HandleSceneChanged;
-            SavesSystem.OnCollectSaveData -= BaseBgmPatch.SaveIndex;
+            BaseBgmPatch.ToggleEvent();
         }
     }
 }

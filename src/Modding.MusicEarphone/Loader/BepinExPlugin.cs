@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using Modding.Core;
 using Modding.Core.PluginLoader;
-using Saves;
 
 namespace Modding.MusicEarphone
 {
@@ -12,20 +11,24 @@ namespace Modding.MusicEarphone
         protected override string PluginId => Util.BepinExUuid;
         protected override string PluginName => Util.PluginName;
 
+        public override void InitializeLogger()
+        {
+            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.BepInEx, Util.PluginName);
+            ModLogger = MusicEarphonePatch.ModLogger;
+        }
+
         /// <summary>
         ///     启用脚本时调用
         /// </summary>
         public override void OnEnable()
         {
-            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.BepInEx, Util.PluginName);
-            Harmony.PatchAll();
-            ModLogger!.LogInformation("mod is enabled by bepinex");
-            MusicEarphonePatch.LoadEarphoneMusics();
-            ModLogger!.LogInformation("scene loader handler enabled!");
-            SceneLoader.onStartedLoadingScene += MusicEarphonePatch.HandleSceneChanged;
-            CharacterMainControl.OnMainCharacterSlotContentChangedEvent += MusicEarphonePatch.HandleSlotContentChanged;
-            AIMainBrain.OnSoundSpawned += MusicEarphonePatch.HandleSoundSpawned;
-            SavesSystem.OnCollectSaveData += MusicEarphonePatch.SaveIndex;
+            if (MusicEarphonePatch.InitPatchDependency())
+            {
+                Harmony.PatchAll();
+                ModLogger.LogInformation("mod is enabled by bepinex");
+                MusicEarphonePatch.ToggleEvent();
+                ModLogger.LogInformation("event handler enabled!");
+            }
         }
 
         /// <summary>
@@ -33,10 +36,8 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnDisable()
         {
-            //base.OnDisable();
-            //SceneLoader.onStartedLoadingScene -= MusicEarphonePatch.HandleSceneChanged;
-            ModLogger!.LogInformation("plugin disabled!");
+            //MusicEarphonePatch.ToggleEvent();
+            ModLogger.LogInformation("event handler disabled!");
         }
-
     }
 }
