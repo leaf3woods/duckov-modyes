@@ -47,7 +47,7 @@
 
    * Modding.WorkShopUploader：工作坊上传工具模块。
 
-2. dependency 目录：可能用于存放依赖项。
+2. dependency 目录：用于存放依赖项。
 
 3. doc 目录：用于存放文档文件。
 
