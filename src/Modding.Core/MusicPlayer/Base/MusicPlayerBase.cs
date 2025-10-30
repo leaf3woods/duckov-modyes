@@ -54,7 +54,7 @@ namespace Modding.Core.MusicPlayer.Base
 
         public abstract void TogglePause(bool? paused = null);
 
-        public abstract void ApplyVolume(float? volume = null);
+        public abstract void ApplyVolume(float? volume = null, bool @virtual = false);
 
         protected List<TMusic> Shuffle(List<TMusic> array)
         {
@@ -92,24 +92,19 @@ namespace Modding.Core.MusicPlayer.Base
             };
         }
 
-        public async Task FadeToAsync(float duration, float target = 0)
+        public async Task FadeOutAsync(float duration, bool @out = true)
         {
-            const int steps = 50;
             const float ignore = 0.05f;
-            var stepTime = duration / steps;
-            var volume = Volume;
-            if (Math.Abs(volume - target) <= ignore || !IsPlaying)
-            {
-                ApplyVolume(volume);
-                return;
-            }
 
-            if (Volume < target)
+            var steps = (int)Math.Ceiling(Volume / ignore);
+            var stepTime = duration / steps;
+            
+            if (!@out)
             {
                 for (int i = 0; i < steps; i++)
                 {
-                    volume = Volume + (float)i / steps;
-                    ApplyVolume(volume);
+                    var volume = (float)i / steps;
+                    ApplyVolume(volume, true);
                     await Task.Delay((int)(stepTime * 1000));
                 }
             }
@@ -117,14 +112,13 @@ namespace Modding.Core.MusicPlayer.Base
             {
                 for (int i = 0; i < steps; i++)
                 {
-                    volume = Volume - (float)i / steps;
-                    if (target == 0 && volume < ignore)
+                    var volume = Volume - (float)i / steps;
+                    if (volume < ignore)
                     {
-                        ApplyVolume(0);
-                        Stop();
+                        ApplyVolume(0, true);
                         break;
                     }
-                    ApplyVolume(volume);
+                    ApplyVolume(volume, true);
                     await Task.Delay((int)(stepTime * 1000));
                 }
             }

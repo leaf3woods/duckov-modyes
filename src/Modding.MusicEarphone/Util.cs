@@ -1,5 +1,4 @@
-﻿using Modding.Core;
-
+﻿
 namespace Modding.MusicEarphone
 {
     public class Util
@@ -8,7 +7,5 @@ namespace Modding.MusicEarphone
 
         public const string BepinExUuid = "yesmod.duckov.bepinex.musicearphone";
         public const string OfficalPluginUuid = "yesmod.duckov.offical+.musicearphone";
-
-        public static LoadingMode LoadingMode = LoadingMode.None;
     }
 }

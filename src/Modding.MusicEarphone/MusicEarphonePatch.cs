@@ -13,6 +13,7 @@ using SodaCraft.StringUtilities;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace Modding.MusicEarphone
@@ -25,14 +26,8 @@ namespace Modding.MusicEarphone
     {
         public static ModLogger ModLogger { get; set; } = null!;
 
-        public const string LevelSceneName = "Level";
-        public const string BaseSceneName = "Base";
-        public const string MasterBus = "Master";
-        public const string MusicBus = "Master/Music";
         private const float _factor = 0.3f;
-
         private const int interval = 5;
-        private const int _earphoneTypeid = 1252;
 
         /// <summary>
         ///     自定义BGM音量绑定到哪个通道
@@ -42,15 +37,18 @@ namespace Modding.MusicEarphone
         public static float EarphoneVolume => MasterVolume * MusicVolume * _factor;
 
         private static bool _initialized = false;
-        private static string _lastSceneName = BaseSceneName;
+        private static string _lastSceneName = Shared.BaseSceneName;
         private static Timer _timer = new Timer();
         private static bool _isEventRegisterd = false;
         private static int _savedIndex = -1;
+        private static bool isPatched = false;
+
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
 
         public static bool InitPatchDependency()
         {
+            if (isPatched) return false;
             try
             {
                 ModLogger.LogInformation($"loading earphone musics...");
@@ -79,7 +77,8 @@ namespace Modding.MusicEarphone
                     MusicPlayer.Start(LoopMode.Random, EarphoneVolume, ShuffleMode.FisherYates, false);
                     MusicPlayer.Load(files);
                     _savedIndex = SavesSystem.Load<int>(Util.PluginName);
-                    ModLogger.LogInformation($"earphone musics loaded! total {files.Count()} musics.");
+                    ModLogger.LogInformation($"earphone musics loaded! total {files.Count()} musics, index is {_savedIndex}.");
+                    isPatched = true;
                     return true;
                 }
                 else
@@ -97,10 +96,10 @@ namespace Modding.MusicEarphone
 
         public async static UniTaskVoid InitializeEarphoneItemAsync()
         {
-            var exist = PlayerStorage.IncomingItemBuffer.FirstOrDefault(item => item.RootTypeID == _earphoneTypeid);
+            var exist = PlayerStorage.IncomingItemBuffer.FirstOrDefault(item => item.RootTypeID == Shared.HeadsetLV2TypeId);
             if(exist is null)
             {
-                var earphone = await ItemAssetsCollection.InstantiateAsync(_earphoneTypeid);
+                var earphone = await ItemAssetsCollection.InstantiateAsync(Shared.HeadsetLV2TypeId);
                 earphone.name = "music earphone";
                 earphone.DisplayNameRaw = "音乐耳机";
                 earphone.Quality = 2333;
@@ -120,7 +119,7 @@ namespace Modding.MusicEarphone
                 SavesSystem.OnCollectSaveData += SaveIndex;
                 LevelManager.OnEvacuated += HandleEvacuated;
                 Health.OnDead += HandleOnDead;
-                Health.OnHurt += HandleOnHurt;
+                //Health.OnHurt += HandleOnHurt;
             }
             else
             {
@@ -130,17 +129,17 @@ namespace Modding.MusicEarphone
                 SavesSystem.OnCollectSaveData -= SaveIndex;
                 LevelManager.OnEvacuated -= HandleEvacuated;
                 Health.OnDead -= HandleOnDead;
-                Health.OnHurt -= HandleOnHurt;
+                //Health.OnHurt -= HandleOnHurt;
             }
             _isEventRegisterd = !_isEventRegisterd;
         }
 
         /// <summary>
-        /// 周围出现敌人
+        /// 敌人消失
         /// </summary>
         public static void NoSoundTimerHandler(object sender, ElapsedEventArgs e)
         {
-            if(MusicPlayer.IsPlaying)
+            if (MusicPlayer.IsPlaying && LevelManager.Instance.name.Contains(Shared.LevelSceneName))
             //音乐恢复
             MusicPlayer.TogglePause(false);
             ModLogger.LogInformation($"enemy disapear, music continue...");
@@ -150,11 +149,11 @@ namespace Modding.MusicEarphone
         [HarmonyPatch(typeof(UI_Bus_Slider), "OnValueChanged")]
         public static void OnValueChangedPostfixPatch(AudioManager.Bus ___busRef)
         {
-            if(___busRef.Name == MasterBus)
+            if(___busRef.Name == Shared.MasterBus)
             {
                 MasterVolume = ___busRef.Volume;
             }
-            else if(___busRef.Name == MusicBus)
+            else if(___busRef.Name == Shared.MusicBus)
             {
                 MusicVolume = ___busRef.Volume;
             }
@@ -166,13 +165,12 @@ namespace Modding.MusicEarphone
             //var isVisiable = ((bool)sound.fromCharacter && (bool)sound.fromCharacter.characterModel &&
             //    !sound.fromCharacter.characterModel.Hidden && !GameCamera.Instance.IsOffScreen(sound.pos));
             //周围有鸭子进入战斗状态暂停
-            if (MusicPlayer.IsPlaying && !MusicPlayer.IsPasued &&
+            if (MusicPlayer.IsPlaying &&
                 Team.IsEnemy(Teams.player, sound.fromTeam) &&
                 sound.fromCharacter && sound.fromCharacter.characterModel &&
                 !GameCamera.Instance.IsOffScreen(sound.pos))
             {
                 MusicPlayer.TogglePause(true);
-                ModLogger.LogInformation("enemy in combat, music paused!");
                 _timer.Stop();   // 先停止
                 _timer.Start();  // 重新计时
             }
@@ -180,25 +178,25 @@ namespace Modding.MusicEarphone
 
         public static void HandleSlotContentChanged(CharacterMainControl main, Slot slot)
         {
-            if (slot is null || slot.Key != "Headset" || main is null ||
-                LevelManager.Instance is null || LevelManager.Instance.IsBaseLevel) return;
-            if (MusicPlayer.Count == 0)
-            {
-                ModLogger.LogInformation($"musics not exist, skipped playing!");
-            }
+            if (slot is null || slot.Key != Shared.HeadsetSlotKey || main is null ||
+                LevelManager.Instance is null || LevelManager.Instance.IsBaseLevel || !LevelManager.Instance.isActiveAndEnabled) return;
             var msg = string.Empty;
             if (slot.Content is null)
             {
-                ModLogger.LogInformation($"set item method patched, stoping music!");
-                MusicPlayer.Stop();
+                ModLogger.LogInformation($"set item method patched, stoping music!");  
                 msg = "耳机已经移除, 音乐停止!";
+                Task.Run(async() =>
+                {
+                    await MusicPlayer.FadeOutAsync(Shared.FadeOutDuration);
+                    MusicPlayer.Stop();
+                });
                 _timer.Elapsed -= NoSoundTimerHandler;
             }
             else
             {
-                ModLogger.LogInformation($"headset slot is added content: {slot.Content.DisplayNameRaw}, now playing music!");
-                MusicPlayer.Play(-1);
-                var bgmInfoFormat = "BGMInfoFormat".ToPlainText();
+                MusicPlayer.Play(_savedIndex);
+
+                var bgmInfoFormat = Shared.BGMMsgFormat.ToPlainText();
                 msg = bgmInfoFormat.Format(new
                 {
                     name = MusicPlayer.Current.music.Info.musicName,
@@ -207,30 +205,46 @@ namespace Modding.MusicEarphone
                 });
                 _timer.Elapsed += NoSoundTimerHandler;
                 _timer.Interval = interval * 1000;
-                _timer.AutoReset = false; //true-一直循环 ，false-循环一次   
-                _timer.Enabled = false;
+                _timer.AutoReset = false; //true-一直循环 ，false-循环一次 
+                _timer.Enabled = true;
             }
-            var root = main.modelRoot;
-            DialogueBubblesManager.Show(msg, root, 0.8f, false, false, 200f, 2f).Forget();
+            if (main.modelRoot)
+            {
+                DialogueBubblesManager.Show(msg, main.modelRoot, 0.8f, false, false, 200f, 2f).Forget();
+            }
         }
 
         public static void HandleOnDead(Health health, DamageInfo info)
         {
-            MusicPlayer.Stop();
-            _timer.Stop();
+            if (health.IsMainCharacterHealth)
+            {
+                Task.Run(async () =>
+                {
+                    await MusicPlayer.FadeOutAsync(Shared.FadeOutDuration);
+                    MusicPlayer.Stop();
+                });
+                _timer.Stop();
+            }
         }
 
         public static void HandleOnHurt(Health health, DamageInfo info)
         {
-            MusicPlayer.TogglePause(true);
-            ModLogger.LogInformation("enemy in combat, music paused!");
-            _timer.Stop();   // 先停止
-            _timer.Start();  // 重新计时
+            if (health.IsMainCharacterHealth)
+            {
+                MusicPlayer.TogglePause(true);
+                ModLogger.LogInformation("enemy in combat, music paused!");
+                _timer.Stop();   // 先停止
+                _timer.Start();  // 重新计时
+            }
         }
 
         public static void HandleEvacuated(EvacuationInfo evacuationInfo)
         {
-            MusicPlayer.Stop();
+            Task.Run(async () =>
+            {
+                await MusicPlayer.FadeOutAsync(Shared.FadeOutDuration);
+                MusicPlayer.Stop();
+            });
             _timer.Stop();
         }
 
@@ -238,23 +252,31 @@ namespace Modding.MusicEarphone
         public static void HandleSceneChanged(SceneLoadingContext context)
         {
             // 切换场景时获取绑定通道的音量
-            MasterVolume = AudioManager.GetBus(MusicBus).Volume;
-            MusicVolume = AudioManager.GetBus(MasterBus).Volume;
+            MasterVolume = AudioManager.GetBus(Shared.MusicBus).Volume;
+            MusicVolume = AudioManager.GetBus(Shared.MasterBus).Volume;
+            MusicPlayer.ApplyVolume(EarphoneVolume);
             ModLogger.LogInformation($"current sceneName is {context.sceneName}, current volume is {EarphoneVolume * 100f:0}");
             //进入地图后开始加载
-            if (context.sceneName.Contains(LevelSceneName))
+            if (context.sceneName.Contains(Shared.LevelSceneName))
             {
-                if(_lastSceneName == BaseSceneName && false)
+                var slot = CharacterMainControl.Main.GetSlot(Shared.HeadsetSlotKey.GetHashCode());
+                if(slot is null) ModLogger.LogInformation($"找不到");
+                if (_lastSceneName == Shared.BaseSceneName && slot != null &&
+                    slot.Content != null && slot.Content.TypeID == Shared.HeadsetLV2TypeId)
                 {
                     MusicPlayer.Play(_savedIndex);
                 }
                 _lastSceneName = context.sceneName;
             }
-            else if (context.sceneName.Contains(BaseSceneName))
+            else
             {
-                MusicPlayer.Stop();
+                Task.Run(async () =>
+                {
+                    await MusicPlayer.FadeOutAsync(Shared.FadeOutDuration);
+                    MusicPlayer.Stop();
+                });
                 _timer.Stop();
-                if (!_initialized)
+                if (!_initialized && context.sceneName.Contains(Shared.BaseSceneName))
                 {
                     InitializeEarphoneItemAsync().Forget();
                     _initialized = true;

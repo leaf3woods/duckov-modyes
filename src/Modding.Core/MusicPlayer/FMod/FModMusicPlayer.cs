@@ -122,13 +122,17 @@ namespace Modding.Core.MusicPlayer.FMod
             return RESULT.OK;
         }
 
-        public override void ApplyVolume(float? volume = null)
+        public override void ApplyVolume(float? volume = null, bool @virtual = false)
         {
-            if(volume != null)
+            if(@virtual)
             {
-                Volume = volume.Value;
+                _currentChannel.setVolume(volume ?? Volume);
             }
-            _currentChannel.setVolume(Volume);
+            else
+            {
+                Volume = volume ?? Volume;
+                _currentChannel.setVolume(Volume);
+            }
         }
 
         public override void TogglePause(bool? paused = null)

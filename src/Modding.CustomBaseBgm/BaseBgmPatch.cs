@@ -24,20 +24,19 @@ namespace Modding.CustomBaseBgm
         public static ModLogger ModLogger { get; set; } = null!;
 
         public static float BgmVolume => BgmMasterVolume * BgmMusicVolume;
-        public static string BaseSceneName = "Base";
         /// <summary>
         ///     自定义BGM音量绑定到哪个通道
         /// </summary>
-        public const string MasterBus = "Master";
         public static float BgmMasterVolume = 1f;
-        public const string MusicBus = "Master/Music";
         public static float BgmMusicVolume = 0.5f;
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
         private static bool isEventRegisterd = false;
+        private static bool isPatched = false;
 
         public static bool InitPatchDependency()
         {
+            if(isPatched) return false;
             try
             {
                 ModLogger.LogInformation($"bgm load patched!");
@@ -66,6 +65,7 @@ namespace Modding.CustomBaseBgm
                     MusicPlayer.Start(LoopMode.Random, BgmVolume, ShuffleMode.FisherYates, false);
                     MusicPlayer.Load(files);
                     ModLogger.LogInformation($"custom bgm loaded! total {files.Count()} musics.");
+                    isPatched = true;
                     return true;
                 }
                 else
@@ -85,11 +85,13 @@ namespace Modding.CustomBaseBgm
             if (!isEventRegisterd)
             {
                 SceneLoader.onStartedLoadingScene += HandleSceneChanged;
+                SceneLoader.onAfterSceneInitialize += HandleSceneChanged;
                 SavesSystem.OnCollectSaveData += SaveIndex;
             }
             else
             {
                 SceneLoader.onStartedLoadingScene -= HandleSceneChanged;
+                SceneLoader.onAfterSceneInitialize -= HandleSceneChanged;
                 SavesSystem.OnCollectSaveData -= SaveIndex;
             }
             isEventRegisterd = !isEventRegisterd;
@@ -110,7 +112,8 @@ namespace Modding.CustomBaseBgm
         {
             AudioManager.StopBGM();
             
-            if (play)
+            if (play && LevelManager.Instance && LevelManager.Instance.isActiveAndEnabled &&
+                LevelManager.Instance.IsBaseLevel)
             {
                 var index = SavesSystem.Load<int>(Util.PluginName);
                 index = index > MusicPlayer.Count ? -1 : index;
@@ -179,11 +182,11 @@ namespace Modding.CustomBaseBgm
         [HarmonyPatch(typeof(UI_Bus_Slider), "OnValueChanged")]
         public static void OnValueChangedPostfixPatch(AudioManager.Bus ___busRef)
         {
-            if(___busRef.Name == MasterBus)
+            if(___busRef.Name == Shared.MasterBus)
             {
                 BgmMasterVolume = ___busRef.Volume;
             }
-            else if(___busRef.Name == MusicBus)
+            else if(___busRef.Name == Shared.MusicBus)
             {
                 BgmMusicVolume = ___busRef.Volume;
             }
@@ -249,11 +252,6 @@ namespace Modding.CustomBaseBgm
             return true;
         }
 
-        public static void HandleInteractStart(InteractableBase interactable)
-        {
-            ModLogger.LogInformation($"handle interact called, interact is: {interactable.name},{interactable.InteractName}");
-        }
-
         public static void SaveIndex() => SavesSystem.Save<int>(Util.PluginName, MusicPlayer.Current.index);
 
         public static void NextMode()
@@ -265,13 +263,18 @@ namespace Modding.CustomBaseBgm
         public static void HandleSceneChanged(SceneLoadingContext context)
         {
             // 切换场景时获取绑定通道的音量
-            BgmMasterVolume = AudioManager.GetBus(MusicBus).Volume;
-            BgmMusicVolume = AudioManager.GetBus(MasterBus).Volume;
+            BgmMasterVolume = AudioManager.GetBus(Shared.MusicBus).Volume;
+            BgmMusicVolume = AudioManager.GetBus(Shared.MasterBus).Volume;
+            MusicPlayer.ApplyVolume(BgmVolume);
             ModLogger.LogInformation($"current sceneName is {context.sceneName}, current volume is {BgmVolume * 100f:0}");
             //不在地堡时停止实时播放
-            if (!context.sceneName.Contains(BaseSceneName))
+            if (!context.sceneName.Contains(Shared.BaseSceneName))
             {
-                Task.Run(() => MusicPlayer.FadeToAsync(3f));
+                Task.Run(async () =>
+                {
+                    await MusicPlayer.FadeOutAsync(Shared.FadeOutDuration);
+                    MusicPlayer.Stop();
+                });
                 ModLogger.LogInformation("runtime music stoped!");
             }
         }
