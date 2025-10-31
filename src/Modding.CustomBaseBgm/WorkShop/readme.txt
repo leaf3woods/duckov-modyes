@@ -1,0 +1,71 @@
+﻿🎶【自定义基地BGM Custom BaseBGM】🎶
+让你的基地不再单调！用你最爱的音乐替换默认背景，让每次回家都更有感觉～🎧
+
+✅ 已完成项目
+📦 项目已在 GitHub 开源：https://github.com/leaf3woods/duckov-modyes
+
+💥 局内效果预览
+（见图片：modbgm.png 🎨）
+
+🎵 功能说明 🎵
+
+🎧 初次加载后，会在【游戏 exe 目录】下自动生成一个 “MyBGM” 文件夹。
+🎶 把你喜欢的背景音乐文件放进去即可开始享受个性化音乐体验！
+
+💡 如果文件夹中没有能加载的音乐文件，将自动恢复为系统原有背景音乐。
+
+🎵 支持的音频格式：.mp3 / .flac / .aac / .m4a
+🚫 其他类型的文件会被自动排除，保持干净整洁～
+
+🔁 支持多种播放模式：随机 🎲、洗牌 🔄、单曲 🎵、列表循环 ♾️
+当前默认使用“洗牌模式”播放～
+
+🔊 声音设置会自动绑定到主音量和音乐音量，进入场景时会读取并应用已配置的音量值。
+
+🛠 使用说明
+
+1️⃣ 创意工坊用户：
+直接点击【订阅】即可自动安装并启用。
+
+2️⃣ 手动安装方式：
+从 GitHub Releases 页面下载 Release 文件，解压到：
+[游戏exe目录]\Duckov_Data\Mods\
+示例结构如下：
+
+[游戏exe目录]\Duckov_Data\Mods\
+├─modyes-custom-basebgm
+│      0Harmony.dll
+│      BepInEx.dll
+│      info.ini
+│      Modding.Core.dll
+│      Modding.CustomBaseBgm.dll
+│      preview.png
+│
+└─...其他Mod文件夹
+
+
+3️⃣ BepInEx 安装方式：
+将 Release 文件解压到：
+[游戏exe目录]\BepInEx\plugins\
+文件结构如下：
+
+[游戏exe目录]\BepInEx\plugins\
+│  LogOutput.log
+├─cache
+└─plugins
+    ├─.disabled
+    ├─modyes-custom-basebgm
+    │      0Harmony.dll
+    │      BepInEx.dll
+    │      info.ini
+    │      Modding.Core.dll
+    │      Modding.CustomBaseBgm.dll
+    │      preview.png
+    │
+    ├─...其他bepinex加载的mod文件夹
+
+
+🧩 开源项目支持
+
+Harmony — .NET 与 Mono 的运行时补丁库 🪄
+BepInEx — Unity / XNA 游戏插件框架 ⚙️
