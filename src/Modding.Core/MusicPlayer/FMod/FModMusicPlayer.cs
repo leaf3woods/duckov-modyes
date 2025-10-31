@@ -70,7 +70,12 @@ namespace Modding.Core.MusicPlayer.FMod
         {
             if (Musics.Count == 0) throw new InvalidOperationException("music list is empty");
             if(IsPlaying) Stop();
-            TogglePause(false);          
+            if (IsPasued)
+            {
+                TogglePause(false);
+                return;
+            }
+                    
             if(index < 0)
             {
                 switch (LoopMode)
