@@ -1,17 +1,18 @@
 ﻿using Modding.Core;
 using Modding.Core.PluginLoader;
+using Modding.MusicEarphone.Patches;
 
 namespace Modding.MusicEarphone
 {
     public class ModBehaviour : ModBehaviourBase
     {
-        protected override string PluginId => Util.BepinExUuid;
-        protected override string PluginName => Util.PluginName;
+        protected override string PluginId => PluginCore.BepinExUuid;
+        protected override string PluginName => PluginCore.PluginName;
 
         public override void InitializeLogger()
         {
-            MusicEarphonePatch.ModLogger = ModLogger.Initialize<MusicEarphonePatch>(LoadingMode.None, Util.PluginName);
-            ModLogger = MusicEarphonePatch.ModLogger;
+            PluginCore.ModLogger = ModLogger.Initialize<PluginCore>(LoadingMode.None, PluginCore.PluginName);
+            ModLogger = PluginCore.ModLogger;
         }
 
         /// <summary>
@@ -19,12 +20,13 @@ namespace Modding.MusicEarphone
         /// </summary>
         public override void OnEnable()
         {
-            if (MusicEarphonePatch.InitPatchDependency())
+            if (!PluginCore.IsPatched && PluginCore.InitDependency())
             {
                 Harmony.PatchAll();
                 ModLogger.LogInformation("mod is enabled by offical plugin");
-                MusicEarphonePatch.ToggleEvent();
+                PluginCore.ToggleEvent(true);
                 ModLogger.LogInformation("event handler enabled!");
+                PluginCore.IsPatched = true;
             }
         }
 
@@ -33,7 +35,8 @@ namespace Modding.MusicEarphone
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            MusicEarphonePatch.ToggleEvent();
+            PluginCore.ToggleEvent(false);
+            PluginCore.IsPatched = false;
             ModLogger.LogInformation("event handler disabled!");
         }
     }

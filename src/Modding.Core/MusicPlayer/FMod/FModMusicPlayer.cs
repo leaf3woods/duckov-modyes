@@ -70,6 +70,7 @@ namespace Modding.Core.MusicPlayer.FMod
         {
             if (Musics.Count == 0) throw new InvalidOperationException("music list is empty");
             if(IsPlaying) Stop();
+            TogglePause(false);          
             if(index < 0)
             {
                 switch (LoopMode)
@@ -122,9 +123,9 @@ namespace Modding.Core.MusicPlayer.FMod
             return RESULT.OK;
         }
 
-        public override void ApplyVolume(float? volume = null, bool @virtual = false)
+        public override void ApplyVolume(float? volume = null, bool apply = true)
         {
-            if(@virtual)
+            if(!apply)
             {
                 _currentChannel.setVolume(volume ?? Volume);
             }
@@ -165,15 +166,16 @@ namespace Modding.Core.MusicPlayer.FMod
             IsPlaying = false;
         }
 
-        public override void ToggleMute(bool mute)
+        public override void ToggleMute(bool? mute = null)
         {
-            _currentChannel.setMute(mute);
+            IsMute = mute is null ? !IsMute : mute.Value;
+            _currentChannel.setMute(true);
         }
 
         /// <summary>
         ///     支持的音乐格式
         /// </summary>
 
-        public static string[] SupportedMusicExtensions = { "*.mp3", "*.flac", "*.aac", "*.m4a" };
+        public static string[] SupportedTypes = { "*.mp3", "*.flac", "*.aac", "*.m4a" };
     }
 }

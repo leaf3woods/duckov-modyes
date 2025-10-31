@@ -6,13 +6,13 @@ namespace Modding.CustomBaseBgm
 {
     public class ModBehaviour : ModBehaviourBase
     {
-        protected override string PluginId => Util.BepinExUuid;
-        protected override string PluginName => Util.PluginName;
+        protected override string PluginId => PluginCore.BepinExUuid;
+        protected override string PluginName => PluginCore.PluginName;
 
         public override void InitializeLogger()
         {
-            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.None, Util.PluginName);
-            ModLogger = BaseBgmPatch.ModLogger;
+            PluginCore.ModLogger = ModLogger.Initialize<PluginCore>(LoadingMode.None, PluginCore.PluginName);
+            ModLogger = PluginCore.ModLogger;
         }
 
         /// <summary>
@@ -20,12 +20,13 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnEnable()
         {
-            if (BaseBgmPatch.InitPatchDependency())
+            if (!PluginCore.IsPatched && PluginCore.InitDependency())
             {
                 Harmony.PatchAll();
                 ModLogger.LogInformation("mod is enabled by offical plugin");
-                BaseBgmPatch.ToggleEvent();
+                PluginCore.ToggleEvent(true);
                 ModLogger.LogInformation("event handler enabled!");
+                PluginCore.IsPatched = true;
             }
         }
 
@@ -34,7 +35,9 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         protected override void BeforeUnpatching()
         {
-            BaseBgmPatch.ToggleEvent();
+            PluginCore.ToggleEvent(false);
+            PluginCore.IsPatched = false;
+            ModLogger.LogInformation("event handler disabled!");
         }
     }
 }

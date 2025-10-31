@@ -33,7 +33,7 @@ namespace Modding.Core.MusicPlayer.Base
         public void TogglePause(bool? paused = null);
         public void Stop();
 
-        public void ToggleMute(bool mute);
+        public void ToggleMute(bool? mute = null);
 
     }
 
@@ -50,5 +50,11 @@ namespace Modding.Core.MusicPlayer.Base
         FisherYates,
         Random,
         Loop,
+    }
+
+    public enum StopMode
+    {
+        Stop,
+        Pause,
     }
 }

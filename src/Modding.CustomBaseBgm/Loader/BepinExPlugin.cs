@@ -4,17 +4,17 @@ using Modding.Core.PluginLoader;
 
 namespace Modding.CustomBaseBgm
 {
-    [BepInPlugin(Util.BepinExUuid, "Custom Base BGM", "1.0.0")]
+    [BepInPlugin(PluginCore.BepinExUuid, "Custom Base BGM", "1.0.0")]
     //[BepInDependency("com.bepinex.plugin.important")]
     public class BepinExPlugin : BepInExBase
     {
-        protected override string PluginId => Util.BepinExUuid;
-        protected override string PluginName => Util.PluginName;
+        protected override string PluginId => PluginCore.BepinExUuid;
+        protected override string PluginName => PluginCore.PluginName;
 
         public override void InitializeLogger()
         {
-            BaseBgmPatch.ModLogger = ModLogger.Initialize<BaseBgmPatch>(LoadingMode.BepInEx, Util.PluginName);
-            ModLogger = BaseBgmPatch.ModLogger;
+            PluginCore.ModLogger = ModLogger.Initialize<PluginCore>(LoadingMode.BepInEx, PluginCore.PluginName);
+            ModLogger = PluginCore.ModLogger;
         }
 
         /// <summary>
@@ -22,12 +22,13 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnEnable()
         {
-            if (BaseBgmPatch.InitPatchDependency())
+            if (!PluginCore.IsPatched && PluginCore.InitDependency())
             {
                 Harmony.PatchAll();
                 ModLogger.LogInformation("mod is enabled by bepinex");
-                BaseBgmPatch.ToggleEvent();
+                PluginCore.ToggleEvent(true);
                 ModLogger.LogInformation("event handler enabled!");
+                PluginCore.IsPatched = true;
             }
         }
 
@@ -36,7 +37,8 @@ namespace Modding.CustomBaseBgm
         /// </summary>
         public override void OnDisable()
         {
-            //BaseBgmPatch.ToggleEvent();
+            //BaseBgmPatch.ToggleEvent(false);
+            //BaseBgmPatch.IsPatched = false;
             ModLogger.LogInformation("event handler disabled!");
         }
     }

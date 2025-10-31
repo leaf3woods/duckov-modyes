@@ -30,7 +30,7 @@ namespace Modding.Core.MusicPlayer.FMod.Tests
             var _musicPlayer = new FModMusicPlayer<string>();
             var bgmDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
             if (!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
-            var musics = FModMusicPlayer<string>.SupportedMusicExtensions
+            var musics = FModMusicPlayer<string>.SupportedTypes
                 .SelectMany(pa => Directory.GetFiles(bgmDir, pa))
                 .Select(f => new FModMusic<string>
                 {

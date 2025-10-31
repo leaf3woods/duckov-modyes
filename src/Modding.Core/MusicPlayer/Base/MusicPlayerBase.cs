@@ -25,6 +25,7 @@ namespace Modding.Core.MusicPlayer.Base
 
         protected int p1 = -1;
         protected int p2 = -1;
+        private bool _isFading = false; 
 
         /// <summary>
         /// 当前播放项
@@ -50,11 +51,11 @@ namespace Modding.Core.MusicPlayer.Base
 
         public abstract void Stop();
 
-        public abstract void ToggleMute(bool mute);
+        public abstract void ToggleMute(bool? mute = null);
 
         public abstract void TogglePause(bool? paused = null);
 
-        public abstract void ApplyVolume(float? volume = null, bool @virtual = false);
+        public abstract void ApplyVolume(float? volume = null, bool apply = true);
 
         protected List<TMusic> Shuffle(List<TMusic> array)
         {
@@ -92,19 +93,21 @@ namespace Modding.Core.MusicPlayer.Base
             };
         }
 
-        public async Task FadeOutAsync(float duration, bool @out = true)
+        public async Task FadeAsync(float duration, bool outing = true)
         {
+            if (_isFading) return;
+            _isFading = true;
             const float ignore = 0.05f;
 
             var steps = (int)Math.Ceiling(Volume / ignore);
             var stepTime = duration / steps;
             
-            if (!@out)
+            if (!outing)
             {
                 for (int i = 0; i < steps; i++)
                 {
                     var volume = (float)i / steps;
-                    ApplyVolume(volume, true);
+                    ApplyVolume(volume, false);
                     await Task.Delay((int)(stepTime * 1000));
                 }
             }
@@ -115,13 +118,37 @@ namespace Modding.Core.MusicPlayer.Base
                     var volume = Volume - (float)i / steps;
                     if (volume < ignore)
                     {
-                        ApplyVolume(0, true);
+                        ApplyVolume(0, false);
                         break;
                     }
-                    ApplyVolume(volume, true);
+                    ApplyVolume(volume, false);
                     await Task.Delay((int)(stepTime * 1000));
                 }
             }
+            _isFading = false;
+        }
+
+        public async Task FadeOutAsync(float duration, StopMode mode)
+        { 
+            await FadeAsync(duration, true);
+            if (mode == StopMode.Stop)
+            {
+                IsPlaying = false;
+                Stop();
+            }
+            else
+            {
+                IsPasued = true;
+                TogglePause(true);
+            }
+            ApplyVolume(Volume);
+        }
+
+        public async Task FadeInAsync(float duration)
+        {
+            IsPlaying = true;
+            await FadeAsync(duration, false);
+            Play();
         }
     }
 }

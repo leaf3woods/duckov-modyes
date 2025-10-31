@@ -6,7 +6,7 @@ namespace Modding.Core
         public const string BepinExDomain = "yesmod.duckov.bepinex";
         public const string OfficalPluginDomain = "yesmod.duckov.offical+";
 
-        public const float FadeOutDuration = 3f;
+        public const float FadeOutDuration = 2f;
         public const string LevelSceneName = "Level";
         public const string BaseSceneName = "Base";
         public const string MasterBus = "Master";
