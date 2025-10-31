@@ -24,7 +24,7 @@ namespace Modding.MusicEarphone
         public const string BepinExUuid = "yesmod.duckov.bepinex.musicearphone";
         public const string OfficalPluginUuid = "yesmod.duckov.offical+.musicearphone";
 
-        private const int interval = 5;
+        private const int interval = 6;
 
         private static bool _initialized = false;
         private static string _lastSceneName = Shared.BaseSceneName;
@@ -140,7 +140,7 @@ namespace Modding.MusicEarphone
         public static void NoSoundTimerHandler(object sender, ElapsedEventArgs e)
         {
             //音乐恢复
-            Task.Run(() => MusicPlayer.FadeInAsync(Shared.FadeOutDuration));
+            MusicPlayer.TogglePause(false);
             ModLogger.LogInformation($"enemy disapear, music continue...");
         }
 
@@ -154,7 +154,7 @@ namespace Modding.MusicEarphone
                 sound.fromCharacter && sound.fromCharacter.characterModel &&
                 !GameCamera.Instance.IsOffScreen(sound.pos))
             {
-                Task.Run(() => MusicPlayer.FadeOutAsync(Shared.FadeOutDuration, StopMode.Pause));
+                MusicPlayer.TogglePause(true);
                 _timer.Stop();   // 先停止
                 _timer.Start();  // 重新计时
             }
@@ -176,14 +176,15 @@ namespace Modding.MusicEarphone
             if (slot.Content is null)
             {
                 ModLogger.LogInformation($"set item method patched, stoping music!");
-                msg = "耳机已经移除, 音乐停止!";
                 Task.Run(() => MusicPlayer.FadeOutAsync(Shared.FadeOutDuration, StopMode.Stop));
                 _timer.Elapsed -= NoSoundTimerHandler;
                 _timer.Stop();
+                msg = "耳机已经移除, 音乐停止!";
             }
             else
             {
                 Task.Run(() => MusicPlayer.FadeInAsync(Shared.FadeOutDuration));
+                MusicPlayer.Play();
                 InitializeTimer();
                 var bgmInfoFormat = Shared.BGMMsgFormat.ToPlainText();
                 msg = bgmInfoFormat.Format(new

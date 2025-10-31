@@ -66,7 +66,7 @@ namespace Modding.Core.MusicPlayer.FMod
         /// -1: 播放当前
         /// </summary>
         /// <param name="index"></param>
-        public override void Play(int index)
+        public override void Play(int index = -1)
         {
             if (Musics.Count == 0) throw new InvalidOperationException("music list is empty");
             if(IsPlaying) Stop();

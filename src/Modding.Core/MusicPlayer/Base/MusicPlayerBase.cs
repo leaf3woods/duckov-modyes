@@ -25,7 +25,8 @@ namespace Modding.Core.MusicPlayer.Base
 
         protected int p1 = -1;
         protected int p2 = -1;
-        private bool _isFading = false; 
+        private bool _onFadeIn = false;
+        private bool _onFadeOut = false;
 
         /// <summary>
         /// 当前播放项
@@ -95,28 +96,32 @@ namespace Modding.Core.MusicPlayer.Base
 
         public async Task FadeAsync(float duration, bool outing = true)
         {
-            if (_isFading) return;
-            _isFading = true;
-            const float ignore = 0.05f;
+            if ((_onFadeIn && !outing) || (_onFadeOut && outing)) return;
+            const float ignorance = 0.02f;
 
-            var steps = (int)Math.Ceiling(Volume / ignore);
+            var steps = (int)Math.Ceiling(Volume / ignorance);
             var stepTime = duration / steps;
             
             if (!outing)
             {
+                _onFadeIn = true;
                 for (int i = 0; i < steps; i++)
                 {
+                    if (_onFadeOut) break;
                     var volume = (float)i / steps;
                     ApplyVolume(volume, false);
                     await Task.Delay((int)(stepTime * 1000));
                 }
+                _onFadeIn = false;
             }
             else
             {
+                _onFadeOut = true;
                 for (int i = 0; i < steps; i++)
                 {
+                    if(_onFadeIn) break;
                     var volume = Volume - (float)i / steps;
-                    if (volume < ignore)
+                    if (volume < ignorance)
                     {
                         ApplyVolume(0, false);
                         break;
@@ -124,8 +129,8 @@ namespace Modding.Core.MusicPlayer.Base
                     ApplyVolume(volume, false);
                     await Task.Delay((int)(stepTime * 1000));
                 }
-            }
-            _isFading = false;
+                _onFadeOut = false;
+            }     
         }
 
         public async Task FadeOutAsync(float duration, StopMode mode)
@@ -146,9 +151,11 @@ namespace Modding.Core.MusicPlayer.Base
 
         public async Task FadeInAsync(float duration)
         {
-            IsPlaying = true;
+            var volume = Volume;
+            ApplyVolume(0);
+            IsPlaying = true;    
             await FadeAsync(duration, false);
-            Play();
+            Volume = volume;
         }
     }
 }
