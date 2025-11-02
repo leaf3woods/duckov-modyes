@@ -1,6 +1,5 @@
 ﻿using Modding.Core;
 using Modding.Core.PluginLoader;
-using Modding.MusicEarphone.Patches;
 
 namespace Modding.MusicEarphone
 {

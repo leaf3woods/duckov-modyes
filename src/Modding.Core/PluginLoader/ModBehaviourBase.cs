@@ -61,7 +61,7 @@ namespace Modding.Core.PluginLoader
         /// <summary>
         ///     每帧调用
         /// </summary>
-        public void Update()
+        public virtual void Update()
         {
 
         }

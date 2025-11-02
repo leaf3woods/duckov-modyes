@@ -16,5 +16,6 @@ namespace Modding.Core
 
         public const string HeadsetSlotKey = "Headset";
         public const string BGMMsgFormat = "BGMInfoFormat";
+        public const float MainCharacterBubbleYOffset = 1f;
     }
 }

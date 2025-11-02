@@ -6,6 +6,7 @@ using ItemStatsSystem.Items;
 using Modding.Core;
 using Modding.Core.MusicPlayer.Base;
 using Modding.Core.MusicPlayer.FMod;
+using Modding.MusicEarphone.Utilities;
 using Saves;
 using SodaCraft.Localizations;
 using SodaCraft.StringUtilities;
@@ -14,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using UnityEngine;
 
 namespace Modding.MusicEarphone
 {
@@ -179,6 +181,7 @@ namespace Modding.MusicEarphone
                 Task.Run(() => MusicPlayer.FadeOutAsync(Shared.FadeOutDuration, StopMode.Stop));
                 _timer.Elapsed -= NoSoundTimerHandler;
                 _timer.Stop();
+                MusicPlayerInputScanner.Instance?.gameObject?.SetActive(false);
                 msg = "耳机已经移除, 音乐停止!";
             }
             else
@@ -193,10 +196,11 @@ namespace Modding.MusicEarphone
                     MusicPlayer.Current.music.Info.author,
                     MusicPlayer.Current.index
                 });
+                MusicPlayerInputScanner.Instance?.gameObject?.SetActive(true);
             }
             if (main.modelRoot)
             {
-                DialogueBubblesManager.Show(msg, main.modelRoot, 0.8f, false, false, 200f, 2f).Forget();
+                DialogueBubblesManager.Show(msg, main.modelRoot, Shared.MainCharacterBubbleYOffset, false, false, 200f, 2f).Forget();
             }
         }
 
@@ -238,18 +242,22 @@ namespace Modding.MusicEarphone
             //进入地图后开始加载
             if (context.sceneName.Contains(Shared.LevelSceneName))
             {
+                var _musicPlayerInputObject = new GameObject("MusicPlayerInputScanner");
+                _musicPlayerInputObject.AddComponent<MusicPlayerInputScanner>();
                 var slot = CharacterMainControl.Main.GetSlot(Shared.HeadsetSlotKey.GetHashCode());
                 if (_lastSceneName == Shared.BaseSceneName && slot != null &&
                     slot.Content != null && slot.Content.TypeID == Shared.HeadsetLV2TypeId)
                 {
                     MusicPlayer.Play(SavedIndex);
                     InitializeTimer();
+                    MusicPlayerInputScanner.Instance?.gameObject?.SetActive(true);
                 }
                 _lastSceneName = context.sceneName;
             }
             else
             {
                 Task.Run(() => MusicPlayer.FadeOutAsync(Shared.FadeOutDuration, StopMode.Stop));
+                MusicPlayerInputScanner.Instance?.gameObject?.SetActive(false);
                 _timer.Elapsed -= NoSoundTimerHandler;
                 _timer.Stop();
                 if (!_initialized && context.sceneName.Contains(Shared.BaseSceneName))
@@ -257,6 +265,20 @@ namespace Modding.MusicEarphone
                     InitializeEarphoneItemAsync().Forget();
                     _initialized = true;
                 }
+            }
+        }
+
+        public static void ShowBubbleOnMainCharacter(string? msg = null, float duration = 2f)
+        {
+            if (CharacterMainControl.Main && CharacterMainControl.Main.transform)
+            {
+                msg ??= Shared.BGMMsgFormat.ToPlainText().Format(new
+                {
+                    name = MusicPlayer.Current.music.Info.musicName,
+                    MusicPlayer.Current.music.Info.author,
+                    MusicPlayer.Current.index
+                });
+                DialogueBubblesManager.Show(msg, CharacterMainControl.Main.transform, Shared.MainCharacterBubbleYOffset, false, false, 200f, duration).Forget();
             }
         }
     }
