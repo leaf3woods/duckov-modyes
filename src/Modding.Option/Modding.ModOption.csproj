@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modding.Core\Modding.Core.csproj" />
+  </ItemGroup>
+	
+	<ItemGroup Condition="'$(CI)'=='true'">
+		<Reference Include="..\..\dependency\Game\*.dll">
+			<Private>False</Private>
+			<Pack>false</Pack>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="..\..\dependency\Patching\*.dll">
+		</Reference>
+	</ItemGroup>
+
+</Project>

@@ -1,11 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Modding.Core.MusicPlayer.Base;
-using Modding.Core.MusicPlayer.FMod;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Modding.Core.MusicPlayer.FMod.Tests
 {
@@ -31,7 +25,8 @@ namespace Modding.Core.MusicPlayer.FMod.Tests
             var bgmDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
             if (!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
             var musics = FModMusicPlayer<string>.SupportedTypes
-                .SelectMany(pa => Directory.GetFiles(bgmDir, pa))
+                .SelectMany(pa => Directory.EnumerateFiles(bgmDir, "*", SearchOption.AllDirectories)
+                    .Where(f => f.EndsWith(pa, StringComparison.OrdinalIgnoreCase)))
                 .Select(f => new FModMusic<string>
                 {
                     Info = Path.GetFileNameWithoutExtension(f),

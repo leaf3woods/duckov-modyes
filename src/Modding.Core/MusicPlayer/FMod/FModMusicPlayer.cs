@@ -181,6 +181,6 @@ namespace Modding.Core.MusicPlayer.FMod
         ///     支持的音乐格式
         /// </summary>
 
-        public static string[] SupportedTypes = { "*.mp3", "*.flac", "*.aac", "*.m4a" };
+        public static string[] SupportedTypes = { ".mp3", ".flac", ".aac", ".m4a", ".ogg" };
     }
 }

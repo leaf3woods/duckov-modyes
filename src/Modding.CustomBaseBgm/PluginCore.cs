@@ -42,7 +42,8 @@ namespace Modding.CustomBaseBgm
                 var bgmDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
                 if (!Directory.Exists(bgmDir)) Directory.CreateDirectory(bgmDir);
                 var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedTypes
-                    .SelectMany(pa => Directory.GetFiles(bgmDir, pa))
+                    .SelectMany(pa => Directory.EnumerateFiles(bgmDir, "*", SearchOption.AllDirectories)
+                        .Where(f => f.EndsWith(pa, StringComparison.OrdinalIgnoreCase)))
                     .Select(f =>
                     {
                         var truename = Path.GetFileNameWithoutExtension(f);

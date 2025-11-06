@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Duckov;
+using Duckov.Modding;
 using Duckov.UI.DialogueBubbles;
 using ItemStatsSystem;
 using ItemStatsSystem.Items;
@@ -11,6 +12,7 @@ using Saves;
 using SodaCraft.Localizations;
 using SodaCraft.StringUtilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,7 +28,7 @@ namespace Modding.MusicEarphone
         public const string BepinExUuid = "yesmod.duckov.bepinex.musicearphone";
         public const string OfficalPluginUuid = "yesmod.duckov.offical+.musicearphone";
 
-        private const int interval = 6;
+        private static int _interval = 6;
 
         private static bool _initialized = false;
         private static string _lastSceneName = Shared.BaseSceneName;
@@ -42,8 +44,9 @@ namespace Modding.MusicEarphone
         /// </summary>
         public static float MasterVolume = 1f;
         public static float MusicVolume = 0.5f;
-        public const float Factor = 0.3f;
-        public static float Volume => MasterVolume * MusicVolume * Factor;
+        private static float _factor = 0.3f;
+        private static bool _ifStopMusicWhenEnymyAppear = true;
+        public static float Volume => MasterVolume * MusicVolume * _factor;
 
 
         public static FModMusicPlayer<BaseBGMSelector.Entry> MusicPlayer = new FModMusicPlayer<BaseBGMSelector.Entry>();
@@ -52,12 +55,17 @@ namespace Modding.MusicEarphone
         public static bool InitDependency()
         {
             try
-            {
+            {              
+                if (InitConfigUI())
+                {
+                    ModLogger.LogInformation("mod setting config init success");
+                }
                 ModLogger.LogInformation($"loading earphone musics...");
                 var musicDir = Path.Combine(Environment.CurrentDirectory, "MyBGM");
                 if (!Directory.Exists(musicDir)) Directory.CreateDirectory(musicDir);
                 var files = FModMusicPlayer<BaseBGMSelector.Entry>.SupportedTypes
-                    .SelectMany(pa => Directory.GetFiles(musicDir, pa))
+                    .SelectMany(pa => Directory.EnumerateFiles(musicDir, "*", SearchOption.AllDirectories)
+                        .Where(f => f.EndsWith(pa, StringComparison.OrdinalIgnoreCase)))
                     .Select(f =>
                     {
                         var truename = Path.GetFileNameWithoutExtension(f);
@@ -95,6 +103,28 @@ namespace Modding.MusicEarphone
             }
         }
 
+        public static bool InitConfigUI()
+        {
+            if (!ModSettingAPI.IsInit)
+            {
+                var info = ModManager.modInfos.FirstOrDefault(m => m.name == ("Modding." + PluginName));
+                if (ModSettingAPI.Init(info))
+                {
+                    return ModSettingAPI.AddDropdownList("敌人感知", "决定敌人消灭后多久后开始恢复播放", new List<string> { "长", "中", "短" }, "长",
+                    v => _interval = v switch
+                    {
+                        "长" => 10,
+                        "中" => 6,
+                        "短" => 3,
+                        _ => 6
+                    }) &&
+                    ModSettingAPI.AddToggle("进入战斗是否停止音乐", "进入战斗时否停止音乐", true, v => _ifStopMusicWhenEnymyAppear = v) &&
+                    ModSettingAPI.AddSlider("局内音量系数", "在主音量和BGM通道音量基础上乘以系数", _factor, new Vector2(0f, 1f), v => _factor = v, 3);
+                }
+            }
+            return false;
+        }
+
         public static void ToggleEvent(bool? enable = true)
         {
             if ((enable is null && !_isEventRegisterd) || (enable != null && enable.Value))
@@ -105,6 +135,7 @@ namespace Modding.MusicEarphone
                 SavesSystem.OnCollectSaveData += SaveIndex;
                 LevelManager.OnEvacuated += HandleEvacuated;
                 Health.OnDead += HandleOnDead;
+                ModManager.OnModActivated += HandleModActivated;
                 //Health.OnHurt += HandleOnHurt;
             }
             else
@@ -115,6 +146,7 @@ namespace Modding.MusicEarphone
                 SavesSystem.OnCollectSaveData -= SaveIndex;
                 LevelManager.OnEvacuated -= HandleEvacuated;
                 Health.OnDead -= HandleOnDead;
+                ModManager.OnModActivated -= HandleModActivated;
                 //Health.OnHurt -= HandleOnHurt;
             }
             _isEventRegisterd = !_isEventRegisterd;
@@ -151,7 +183,7 @@ namespace Modding.MusicEarphone
             //var isVisiable = ((bool)sound.fromCharacter && (bool)sound.fromCharacter.characterModel &&
             //    !sound.fromCharacter.characterModel.Hidden && !GameCamera.Instance.IsOffScreen(sound.pos));
             //周围有鸭子进入战斗状态暂停
-            if (MusicPlayer.IsPlaying && !MusicPlayer.IsPasued &&
+            if (_ifStopMusicWhenEnymyAppear && MusicPlayer.IsPlaying && !MusicPlayer.IsPasued &&
                 Team.IsEnemy(Teams.player, sound.fromTeam) &&
                 sound.fromCharacter && sound.fromCharacter.characterModel &&
                 !GameCamera.Instance.IsOffScreen(sound.pos))
@@ -165,7 +197,7 @@ namespace Modding.MusicEarphone
         private static void InitializeTimer()
         {
             _timer.Elapsed += NoSoundTimerHandler;
-            _timer.Interval = interval * 1000;
+            _timer.Interval = _interval * 1000;
             _timer.AutoReset = false; //true-一直循环 ，false-循环一次 
             _timer.Enabled = false;
         }
@@ -229,6 +261,13 @@ namespace Modding.MusicEarphone
             Task.Run(() => MusicPlayer.FadeOutAsync(Shared.FadeOutDuration, StopMode.Stop));
             _timer.Elapsed -= NoSoundTimerHandler;
             _timer.Stop();
+        }
+        public static void HandleModActivated(ModInfo info, MonoBehaviour behaviour)
+        {
+            if (info.name == ModSettingAPI.MOD_NAME && InitConfigUI())
+            {
+                ModLogger.LogInformation("setting config ui is activated success");
+            }
         }
 
         public static void SaveIndex() => SavesSystem.Save(PluginName, MusicPlayer.Current.index);
